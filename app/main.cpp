@@ -1,5 +1,6 @@
-#include <iostream>
-int main() {
-    std::cout << "Hello world" << std::endl;
+#include <io/io.hpp>
+
+int main(int arg, char* argv[]) {
+    const io::IO io{arg, argv};
     return 0;
 }
