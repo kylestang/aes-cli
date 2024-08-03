@@ -6,6 +6,7 @@
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <cassert>
+#include <cctype>
 #include <cstddef>
 #include <cstdlib>
 #include <errors/errors.hpp>
@@ -13,176 +14,225 @@
 #include <format>
 #include <fstream>
 #include <iostream>
-#include <istream>
-#include <mutex>
 #include <optional>
 #include <ostream>
+#include <vector>
 
 namespace io {
 
 namespace po = boost::program_options;
 
-using Bytes = char;
-
 class IOError : public std::exception {
-   private:
-    const std::string msg_;
+    private:
+        const std::string msg_;
+        const errors::Error err_;
 
-   public:
-    IOError(std::string message) : msg_{message} {}
+    public:
+        IOError(std::string message)
+            : msg_{message}, err_{errors::Error::InvalidArgument} {}
 
-    const char* what() const noexcept { return msg_.c_str(); }
+        IOError(std::string message, errors::Error err)
+            : msg_{message}, err_{err} {}
 
-    const int code() const noexcept { return errors::Error::InvalidArgument; }
+        const char* what() const noexcept { return msg_.c_str(); }
+
+        const int code() const noexcept { return err_; }
 };
 
-class InputStream {
-   public:
-    virtual std::size_t read(Bytes* buf, std::size_t size);
-    virtual ~InputStream() = default;
-};
-
-class OutputStream {
-   public:
-    virtual void write(const Bytes* buf, std::size_t size);
-    virtual ~OutputStream() = default;
-};
-
-class StdIn : public InputStream {
-   public:
-    StdIn() {}
-    std::size_t read(Bytes* buf, std::size_t size) {
-        std::cin.read(buf, size);
-        return std::cin.gcount();
-    };
-};
-
-class StdOut : public OutputStream {
-   public:
-    StdOut() {}
-    void write(Bytes* buf, std::size_t size) {
-        std::cout.write(buf, size);
-        if (std::cout.bad()) {
-            throw IOError{"Failed to write to standard output"};
-        }
-    };
-    ~StdOut() {
-        std::cout.flush();
-        assert(!std::cout.bad());
+template <class CharT, class Traits = std::char_traits<CharT>, class T>
+void write_to(std::basic_ostream<CharT, Traits>& stream, const T& t) noexcept {
+    stream << t;
+    if (stream.flush().bad()) {
+        std::clog << "write failed\n" << t << std::endl;
+        if (std::clog.bad()) std::abort();
     }
+}
+
+enum ModeOfOperation : int {
+    GCM = 1,
+    CBC,
+    ECB,
 };
 
-class InputFile : public InputStream {
-   private:
-    std::ifstream file_;
+// Parsing mode of operation string
+inline ModeOfOperation mode_op_parser(const std::string& mode) {
+    // default to GCM
+    if (mode.size() == 0) {
+        return ModeOfOperation::GCM;
+    }
 
-   public:
-    InputFile(std::string filename) : file_{std::ifstream{filename}} {
-        if (!file_.is_open()) {
-            throw IOError(std::format("file not found: {}", filename));
+    std::string mode_lower{mode};
+
+    const auto fn = [](char in) -> char { return std::tolower(in); };
+    std::transform(mode_lower.begin(), mode_lower.end(), mode_lower.begin(),
+                   fn);
+
+    const bool is_gcm = mode_lower == "gcm";
+    const bool is_cbc = mode_lower == "cbc";
+    const bool is_ecb = mode_lower == "ecb";
+
+    if (!is_gcm && !is_cbc && !is_ecb) {
+        throw IOError{"Invalid mode of operation.",
+                      errors::Error::InvalidArgument};
+    }
+
+    if (is_gcm) {
+        return ModeOfOperation::GCM;
+    } else if (is_cbc) {
+        return ModeOfOperation::CBC;
+    } else {  // is_ecb
+        return ModeOfOperation::ECB;
+    }
+}
+
+using Key = std::vector<char>;
+
+inline void key_parser(Key& key) {
+    // (optional) key
+    // if key not fed from cli, read from env args
+    if (key.size() == 0) {
+        const std::string key_env = std::getenv("AES_CLI_KEY");
+        key.reserve(key_env.size());
+        // idk why i can't use std::copy for this...
+        // std::copy(key_env.begin(), key_env.end(), key.begin());
+        for (std::size_t i = 0; i < key_env.size(); ++i) {
+            key.push_back(key_env.at(i));
         }
     }
-    std::size_t read(Bytes* buf, std::size_t bytes) {
-        file_.read(buf, bytes);
-        return file_.gcount();
-    };
-};
 
-class OutputFile : public OutputStream {
-   private:
-    std::ofstream file_;
+    // key size correct?
+    const std::size_t keylen = key.size();
+    const bool valid_keylen = keylen == 16 || keylen == 24 || keylen == 32;
 
-   public:
-    OutputFile(std::string filename) : file_{std::ofstream{filename}} {
-        if (!file_.is_open()) {
-            throw IOError(std::format("failed to open file: {}", filename));
-        }
+    if (!valid_keylen) {
+        throw IOError{"invalid length input key", errors::Error::InvalidKey};
     }
-    void write(Bytes* buf, std::size_t size) {
-        file_.write(buf, size);
-        if (std::cout.bad()) {
-            throw IOError{"Failed to write to standard output"};
-        }
-    };
-    ~OutputFile() {
-        file_.flush();
-        assert(!file_.bad());
-    }
-};
+}
 
 class IO {
-   private:
+    private:
+        // if inputfile is none, read from stdin
+        std::optional<std::ifstream> inputfile_{std::nullopt};
+
+        // if outputfile is none, write to stdout
+        std::optional<std::ofstream> outputfile_{std::nullopt};
+
+        Key key_{};
+
+        ModeOfOperation mode_;
+
+    public:
+        IO(std::string in_filename, std::string out_filename, std::string key,
+           std::string mode) {
+            // (optional) input output files
+            if (in_filename.length()) {
+                if (!std::filesystem::exists(in_filename)) {
+                    throw IOError{
+                        std::format("Input file not found: {}.", in_filename)};
+                }
+
+                inputfile_ = std::ifstream{in_filename};
+
+                if (!inputfile_->is_open()) {
+                    throw IOError{std::format("Failed to open input file: {}.",
+                                              in_filename)};
+                }
+
+            } else {
+                inputfile_ = std::nullopt;
+            }
+
+            // (optional) input output files
+            if (out_filename.length()) {
+                if (std::filesystem::exists(out_filename)) {
+                    throw IOError{
+                        std::format("Output file exists: {}.", out_filename)};
+                }
+
+                outputfile_ = std::ofstream{out_filename};
+
+                if (!outputfile_->is_open()) {
+                    throw IOError{std::format("Failed to open output file: {}.",
+                                              out_filename)};
+                }
+
+            } else {
+                outputfile_ = std::nullopt;
+            }
+
+            // (optional) key
+            // if key not fed from cli, read from env args
+            key_.reserve(32);  // key max 32 bytes
+            key_parser(key_);
+
+            // mode
+            mode_ = mode_op_parser(mode);
+        }
+
+        Key key() const { return key_; }
+
+        ModeOfOperation mode_of_op() const { return mode_; };
+
+        std::size_t read(char* buf, std::size_t s) {
+            if (inputfile_) {
+                return inputfile_->readsome(buf, s);
+            }
+            std::cin.read(buf, s);
+            return std::cin.gcount();
+        }
+
+        void write(char* buf) {
+            if (outputfile_) {
+                write_to(*outputfile_, buf);
+            } else {
+                write_to(std::cout, buf);
+            }
+        }
+};
+
+inline IO parse_cli(int ac, char* av[]) noexcept {
     using InvalidArgument =
         boost::wrapexcept<boost::program_options::unknown_option>;
 
-    InputStream input_stream;
-    OutputStream output_stream;
-
-   public:
-    IO(int ac, char* av[]) {
-        std::string input_file, output_file;
+    try {
+        std::string input_file, output_file, key, mode;
 
         po::options_description desc{"Usage"};
         auto opt = desc.add_options();
-        opt("help", "produce help message");
-        opt("input", po::value<std::string>(&input_file), "input file");
-        opt("output", po::value<std::string>(&output_file), "output file");
-
-        // positional args
-        // po::positional_options_description p;
+        opt("input,i", po::value<std::string>(&input_file),
+            "(optional) input file");
+        opt("output,o", po::value<std::string>(&output_file),
+            "(optional) output file");
+        opt("mode,m", po::value<std::string>(&mode),
+            "set mode of operation, default to GCM");
+        opt("key,k", po::value<std::string>(&key),
+            "(optional) input key, of length 128, 192, 256 bits");
+        opt("help,h", "print this help message and exit");
 
         po::variables_map vm;
-        try {
-            po::store(po::command_line_parser(ac, av)
-                          .options(desc)
-                          // .positional(p)
-                          .run(),
-                      vm);
-            po::notify(vm);
+        po::store(po::command_line_parser(ac, av).options(desc).run(), vm);
+        po::notify(vm);
 
-            // if --help
-            if (vm.count("help")) {
-                std::cout << desc << std::endl;
-                std::exit(0);
-            }
-
-            // (optional) input output files
-            if (input_file.length()) {
-                if (!std::filesystem::exists(input_file)) {
-                    throw IOError{
-                        std::format("Input file not found: {}.", input_file)};
-                }
-                input_stream = InputFile{input_file};
-            } else {
-                input_stream = StdIn{};
-            }
-
-            // (optional) input output files
-            if (output_file.length()) {
-                if (std::filesystem::exists(output_file)) {
-                    throw IOError{
-                        std::format("Output file exists: {}.", output_file)};
-                }
-                output_stream = OutputFile{output_file};
-            } else {
-                output_stream = StdOut{};
-            }
-
-        } catch (const InvalidArgument& err) {
-            std::clog << err.what() << std::endl;
-            std::exit(errors::Error::InvalidArgument);
-
-        } catch (const IOError& err) {
-            std::clog << err.what() << std::endl;
-            std::exit(err.code());
-
-        } catch (...) {
-            const std::exception_ptr p = std::current_exception();
-            std::clog << (p ? p.__cxa_exception_type()->name() : "null")
-                      << std::endl;
-            std::exit(errors::Error::Other);
+        // if --help
+        if (vm.count("help")) {
+            write_to(std::cout, desc);
+            std::exit(0);
         }
+
+        return IO{input_file, output_file, key, mode};
+
+    } catch (const IOError& err) {
+        write_to(std::clog, std::format("{}\n", err.what()));
+        std::exit(err.code());
+
+    } catch (const InvalidArgument& err) {
+        write_to(std::clog, std::format("{}\n", err.what()));
+        std::exit(errors::Error::InvalidArgument);
+
+    } catch (...) {
+        write_to(std::cerr, "io: something went wrong with parsing cli args\n");
+        std::abort();
     }
-};
+}
 
 }  // namespace io
