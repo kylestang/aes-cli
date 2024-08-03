@@ -21,3 +21,7 @@ set_target_properties(libio PROPERTIES LINKER_LANGUAGE CXX)
 set(bin aes-cli)
 add_executable(${bin} ${CMAKE_SOURCE_DIR}/app/main.cpp)
 target_link_libraries(${bin} libio)
+
+# tests
+add_executable(test_io ${CMAKE_SOURCE_DIR}/lib/io/test_io.cpp)
+target_link_libraries(test_io PRIVATE Catch2::Catch2WithMain libio)
