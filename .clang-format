@@ -3,6 +3,7 @@ AccessModifierOffset: 0
 IndentAccessModifiers: true
 IndentWidth: 4
 Language: Cpp
+TabWidth: 4
 DerivePointerAlignment: false
 PointerAlignment: Left
 ColumnLimit: 80
