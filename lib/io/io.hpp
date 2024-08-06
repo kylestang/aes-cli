@@ -10,7 +10,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <errors/errors.hpp>
-#include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -93,8 +92,6 @@ inline void key_parser(Key& key) {
     if (key.size() == 0) {
         const std::string key_env = std::getenv("AES_CLI_KEY");
         key.reserve(key_env.size());
-        // idk why i can't use std::copy for this...
-        // std::copy(key_env.begin(), key_env.end(), key.begin());
         for (std::size_t i = 0; i < key_env.size(); ++i) {
             key.push_back(key_env.at(i));
         }
@@ -123,71 +120,15 @@ class IO {
 
     public:
         IO(std::string in_filename, std::string out_filename, std::string key,
-           std::string mode) {
-            // (optional) input output files
-            if (in_filename.length()) {
-                if (!std::filesystem::exists(in_filename)) {
-                    throw IOError{
-                        std::format("Input file not found: {}.", in_filename)};
-                }
+           ModeOfOperation mode);
 
-                inputfile_ = std::ifstream{in_filename};
+        Key key() const;
 
-                if (!inputfile_->is_open()) {
-                    throw IOError{std::format("Failed to open input file: {}.",
-                                              in_filename)};
-                }
+        ModeOfOperation mode_of_op() const;
 
-            } else {
-                inputfile_ = std::nullopt;
-            }
+        std::size_t read(char* buf, std::size_t s);
 
-            // (optional) input output files
-            if (out_filename.length()) {
-                if (std::filesystem::exists(out_filename)) {
-                    throw IOError{
-                        std::format("Output file exists: {}.", out_filename)};
-                }
-
-                outputfile_ = std::ofstream{out_filename};
-
-                if (!outputfile_->is_open()) {
-                    throw IOError{std::format("Failed to open output file: {}.",
-                                              out_filename)};
-                }
-
-            } else {
-                outputfile_ = std::nullopt;
-            }
-
-            // (optional) key
-            // if key not fed from cli, read from env args
-            key_.reserve(32);  // key max 32 bytes
-            key_parser(key_);
-
-            // mode
-            mode_ = mode_op_parser(mode);
-        }
-
-        Key key() const { return key_; }
-
-        ModeOfOperation mode_of_op() const { return mode_; };
-
-        std::size_t read(char* buf, std::size_t s) {
-            if (inputfile_) {
-                return inputfile_->readsome(buf, s);
-            }
-            std::cin.read(buf, s);
-            return std::cin.gcount();
-        }
-
-        void write(char* buf) {
-            if (outputfile_) {
-                write_to(*outputfile_, buf);
-            } else {
-                write_to(std::cout, buf);
-            }
-        }
+        void write(char* buf);
 };
 
 inline IO parse_cli(int ac, char* av[]) noexcept {
@@ -219,7 +160,7 @@ inline IO parse_cli(int ac, char* av[]) noexcept {
             std::exit(0);
         }
 
-        return IO{input_file, output_file, key, mode};
+        return IO{input_file, output_file, key, mode_op_parser(mode)};
 
     } catch (const IOError& err) {
         write_to(std::clog, std::format("{}\n", err.what()));
