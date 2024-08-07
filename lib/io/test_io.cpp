@@ -6,7 +6,8 @@
 TEST_CASE("io::mode_op_parser") {
     SECTION("parses correct mode of operation") {
         using io::ModeOfOperation;
-        std::pair<std::string, ModeOfOperation> test_cases[]{
+
+        const std::pair<std::string, ModeOfOperation> test_cases[]{
             {"gcm", ModeOfOperation::GCM}, {"gcM", ModeOfOperation::GCM},
             {"gCm", ModeOfOperation::GCM}, {"gCM", ModeOfOperation::GCM},
             {"Gcm", ModeOfOperation::GCM}, {"GcM", ModeOfOperation::GCM},
@@ -42,16 +43,16 @@ TEST_CASE("io::mode_op_parser") {
     }
 }
 
-std::string default_key(std::size_t len) {
-    std::string key{};
-    key.reserve(len);
-    for (std::size_t i = 0; i < len; ++i) {
-        key.push_back('a');
-    }
-    return key;
-}
-
 TEST_CASE("io::key_parser") {
+    const auto default_key = [](std::size_t len) -> std::string {
+        std::string key{};
+        key.reserve(len);
+        for (std::size_t i = 0; i < len; ++i) {
+            key.push_back('a');
+        }
+        return key;
+    };
+
     std::string mockenv = default_key(32);
     setenv("AES_CLI_KEY", mockenv.c_str(), 1);
 
@@ -64,32 +65,19 @@ TEST_CASE("io::key_parser") {
         return true;
     };
 
-    auto default_key = [](std::size_t size) -> std::string {
-        std::string mockkey{};
-        mockkey.reserve(size);
-        for (std::size_t i = 0; i < size; ++i) {
-            mockkey.push_back('a');
-        }
-        return mockkey;
-    };
-
     SECTION("with no key") {
         const std::string key_arg = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
         assert(key_arg.size() == 32);
 
-        io::Key key{};
-        key.reserve(32);
-        REQUIRE(key.size() == 0);
-        io::key_parser(key_arg, key);
+        io::Key key = io::key_parser(key_arg);
         REQUIRE(cmp_fn(key, 32));
     };
 
     SECTION("with some key") {
         std::size_t sizes[3]{16, 24, 32};
         for (const std::size_t& size : sizes) {
-            std::string mockkey = default_key(size);
-            std::vector<char> key{};
-            REQUIRE_NOTHROW(io::key_parser(mockkey, key));
+            const std::string mockkey = default_key(size);
+            REQUIRE_NOTHROW(io::key_parser(mockkey));
         }
     };
 
@@ -97,9 +85,8 @@ TEST_CASE("io::key_parser") {
         std::size_t sizes[]{1,   123, 51, 45,  52,  434, 236, 65,
                             432, 45,  43, 432, 532, 435, 935, 325};
         for (const std::size_t& size : sizes) {
-            std::string mockkey = default_key(size);
-            std::vector<char> key{};
-            REQUIRE_THROWS_AS(io::key_parser(mockkey,key), io::IOError);
+            const std::string mockkey = default_key(size);
+            REQUIRE_THROWS_AS(io::key_parser(mockkey), io::IOError);
         }
     };
 };
