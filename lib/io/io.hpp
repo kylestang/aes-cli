@@ -101,6 +101,11 @@ inline void key_parser(const std::string& key_arg, Key& key_buf) {
         for (std::size_t i = 0; i < env_string.size(); ++i) {
             key_buf.push_back(env_string.at(i));
         }
+    } else {
+        // copy key_arg to key_buf
+        for (std::size_t i = 0; i < key_arg.size(); ++i) {
+            key_buf.push_back(key_arg.at(i));
+        }
     }
 
     // key size correct?
