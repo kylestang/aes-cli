@@ -8,7 +8,7 @@ using io::ModeOfOperation;
 IO::IO(std::string in_filename, std::string out_filename, std::string key,
        ModeOfOperation mode) {
     // (optional) input output files
-    if (in_filename.length()) {
+    if (in_filename.size()) {
         if (!std::filesystem::exists(in_filename)) {
             throw IOError{
                 std::format("Input file not found: {}.", in_filename)};
@@ -20,13 +20,10 @@ IO::IO(std::string in_filename, std::string out_filename, std::string key,
             throw IOError{
                 std::format("Failed to open input file: {}.", in_filename)};
         }
-
-    } else {
-        inputfile_ = std::nullopt;
     }
 
     // (optional) input output files
-    if (out_filename.length()) {
+    if (out_filename.size()) {
         if (std::filesystem::exists(out_filename)) {
             throw IOError{std::format("Output file exists: {}.", out_filename)};
         }
@@ -37,14 +34,12 @@ IO::IO(std::string in_filename, std::string out_filename, std::string key,
             throw IOError{
                 std::format("Failed to open output file: {}.", out_filename)};
         }
-
-    } else {
-        outputfile_ = std::nullopt;
     }
 
     // (optional) key
     // if key not fed from cli, read from env args
-    io::key_parser(key_);
+    io::key_parser(key, key_);
+    std::cout << "HELKRJLKJ" << std::endl;
 
     // mode
     mode_ = mode;
@@ -54,12 +49,12 @@ io::Key IO::key() const { return key_; }
 
 io::ModeOfOperation IO::mode_of_op() const { return mode_; };
 
-std::size_t IO::read(char* buf, std::size_t s) {
+std::size_t IO::read(crypto::Block& buf) {
+    std::size_t s = crypto::BLOCK_SIZE;
     if (inputfile_) {
-        return inputfile_->readsome(buf, s);
+        return inputfile_->readsome((char*)buf.begin(), s);
     }
-    std::cin.read(buf, s);
-    return std::cin.gcount();
+    return std::cin.readsome((char*)buf.begin(), s);
 }
 
 void IO::write(char* buf) {

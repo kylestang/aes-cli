@@ -64,8 +64,8 @@ TEST_CASE("io::key_parser") {
         return true;
     };
 
-    auto default_key = [](std::size_t size) -> std::vector<char> {
-        std::vector<char> mockkey{};
+    auto default_key = [](std::size_t size) -> std::string {
+        std::string mockkey{};
         mockkey.reserve(size);
         for (std::size_t i = 0; i < size; ++i) {
             mockkey.push_back('a');
@@ -74,18 +74,22 @@ TEST_CASE("io::key_parser") {
     };
 
     SECTION("with no key") {
+        const std::string key_arg = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        assert(key_arg.size() == 32);
+
         io::Key key{};
         key.reserve(32);
         REQUIRE(key.size() == 0);
-        io::key_parser(key);
+        io::key_parser(key_arg, key);
         REQUIRE(cmp_fn(key, 32));
     };
 
     SECTION("with some key") {
         std::size_t sizes[3]{16, 24, 32};
         for (const std::size_t& size : sizes) {
-            std::vector<char> mockkey = default_key(size);
-            REQUIRE_NOTHROW(io::key_parser(mockkey));
+            std::string mockkey = default_key(size);
+            std::vector<char> key{};
+            REQUIRE_NOTHROW(io::key_parser(mockkey, key));
         }
     };
 
@@ -93,8 +97,9 @@ TEST_CASE("io::key_parser") {
         std::size_t sizes[]{1,   123, 51, 45,  52,  434, 236, 65,
                             432, 45,  43, 432, 532, 435, 935, 325};
         for (const std::size_t& size : sizes) {
-            std::vector<char> mockkey = default_key(size);
-            REQUIRE_THROWS_AS(io::key_parser(mockkey), io::IOError);
+            std::string mockkey = default_key(size);
+            std::vector<char> key{};
+            REQUIRE_THROWS_AS(io::key_parser(mockkey,key), io::IOError);
         }
     };
 };

@@ -7,6 +7,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <cassert>
 #include <cctype>
+#include <crypto/crypto.cpp>
 #include <cstddef>
 #include <cstdlib>
 #include <errors/errors.hpp>
@@ -60,45 +61,50 @@ inline ModeOfOperation mode_op_parser(const std::string& mode) {
         return ModeOfOperation::GCM;
     }
 
-    std::string mode_lower{mode};
+    std::string mode_lower{};
 
-    const auto fn = [](char in) -> char { return std::tolower(in); };
-    std::transform(mode_lower.begin(), mode_lower.end(), mode_lower.begin(),
-                   fn);
+    const auto fn = [](unsigned char in) -> unsigned char {
+        return std::tolower(in);
+    };
+    std::transform(mode.begin(), mode.end(), mode_lower.begin(), fn);
 
     const bool is_gcm = mode_lower == "gcm";
     const bool is_cbc = mode_lower == "cbc";
     const bool is_ecb = mode_lower == "ecb";
 
-    if (!is_gcm && !is_cbc && !is_ecb) {
-        throw IOError{"Invalid mode of operation.",
-                      errors::Error::InvalidArgument};
-    }
-
     if (is_gcm) {
         return ModeOfOperation::GCM;
     } else if (is_cbc) {
         return ModeOfOperation::CBC;
-    } else {  // is_ecb
+    } else if (is_ecb) {
         return ModeOfOperation::ECB;
+    } else {
+        throw IOError{"Invalid mode of operation.",
+                      errors::Error::InvalidArgument};
     }
 }
 
 using Key = std::vector<char>;
 
-inline void key_parser(Key& key) {
+inline void key_parser(const std::string& key_arg, Key& key_buf) {
     // (optional) key
     // if key not fed from cli, read from env args
-    if (key.size() == 0) {
-        const std::string key_env = std::getenv("AES_CLI_KEY");
-        key.reserve(key_env.size());
-        for (std::size_t i = 0; i < key_env.size(); ++i) {
-            key.push_back(key_env.at(i));
+    if (key_arg.size() == 0) {
+        const char* key_env = std::getenv("AES_CLI_KEY");
+        if (!key_env) {
+            throw IOError{"env variable not set: AES_CLI_KEY"};
+        }
+
+        const std::string env_string{key_env};
+
+        key_buf.reserve(env_string.size());
+        for (std::size_t i = 0; i < env_string.size(); ++i) {
+            key_buf.push_back(env_string.at(i));
         }
     }
 
     // key size correct?
-    const std::size_t keylen = key.size();
+    const std::size_t keylen = key_buf.size();
     const bool valid_keylen = keylen == 16 || keylen == 24 || keylen == 32;
 
     if (!valid_keylen) {
@@ -126,7 +132,7 @@ class IO {
 
         ModeOfOperation mode_of_op() const;
 
-        std::size_t read(char* buf, std::size_t s);
+        std::size_t read(crypto::Block& buf);
 
         void write(char* buf);
 };
@@ -160,7 +166,8 @@ inline IO parse_cli(int ac, char* av[]) noexcept {
             std::exit(0);
         }
 
-        return IO{input_file, output_file, key, mode_op_parser(mode)};
+        ModeOfOperation modee = mode_op_parser(mode);
+        return IO{input_file, output_file, key, modee};
 
     } catch (const IOError& err) {
         write_to(std::clog, std::format("{}\n", err.what()));
@@ -171,8 +178,11 @@ inline IO parse_cli(int ac, char* av[]) noexcept {
         std::exit(errors::Error::InvalidArgument);
 
     } catch (...) {
-        write_to(std::cerr, "io: something went wrong with parsing cli args\n");
-        std::abort();
+        std::exception_ptr p = std::current_exception();
+        write_to(std::clog, "io: something went wrong with parsing cli args\n");
+        std::clog << (p ? p.__cxa_exception_type()->name() : "null")
+                  << std::endl;
+        std::exit(errors::Error::Other);
     }
 }
 
