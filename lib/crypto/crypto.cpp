@@ -37,8 +37,8 @@ class CipherMode {
         ~CipherMode() = default;
 
         const KeyType& key() const noexcept { return key_; };
-        virtual void encrypt_inplace(Block& block) const noexcept;
-        virtual void decrypt_inplace(Block& block) const noexcept;
+        virtual void encrypt_inplace(Block& plaintext) noexcept;
+        virtual void decrypt_inplace(Block& ciphertext) noexcept;
 
         CipherMode() = delete;
         CipherMode(CipherMode&) = delete;
