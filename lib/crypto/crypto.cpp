@@ -3,8 +3,25 @@
 #include <cstdint>
 
 namespace crypto {
-const std::size_t BLOCK_SIZE = 16;  // 16 bytes
+inline const std::size_t BLOCK_SIZE = 16;  // 16 bytes
+
 using Block = std::array<uint8_t, BLOCK_SIZE>;
+
+inline Block& operator^=(Block& left, const Block& right) {
+    for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
+        left[i] ^= right[i];
+    }
+    return left;
+}
+
+inline Block operator^(const Block& left, const Block& right) {
+    Block out{};
+    for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
+        out[i] = left[i] ^ right[i];
+    }
+    return out;
+}
+
 }  // namespace crypto
 
 namespace crypto::ciphermode {
@@ -14,12 +31,6 @@ class CipherMode {
                                 // the right type
     protected:
         const KeyType& key_;
-
-        void xor_block(Block& block_mut, const Block& block) const {
-            for (std::size_t i = 0; i < block.size(); ++i) {
-                block_mut[i] ^= block[i];
-            }
-        };
 
     public:
         CipherMode(const KeyType& key) : key_{key} {};
