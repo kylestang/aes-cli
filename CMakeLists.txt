@@ -22,16 +22,25 @@ add_library(libio ${CMAKE_SOURCE_DIR}/lib/io/io.hpp
 target_include_directories(libio PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries(libio PRIVATE ${Boost_LIBRARIES})
 set_target_properties(libio PROPERTIES LINKER_LANGUAGE CXX)
-# test bin
-add_executable(test_io ${CMAKE_SOURCE_DIR}/lib/io/test_io.cpp)
-target_link_libraries(test_io PRIVATE Catch2::Catch2WithMain libio)
 
 # padding
 add_library(libpadding ${CMAKE_SOURCE_DIR}/lib/crypto/padding.hpp)
 set_target_properties(libpadding PROPERTIES LINKER_LANGUAGE CXX)
-# test bin
+
+# TESTS
+
+# io
+add_executable(test_io ${CMAKE_SOURCE_DIR}/lib/io/test_io.cpp)
+target_link_libraries(test_io PRIVATE Catch2::Catch2WithMain libio)
+
+# padding
 add_executable(test_padding ${CMAKE_SOURCE_DIR}/lib/crypto/test_padding.cpp)
 target_link_libraries(test_padding PRIVATE Catch2::Catch2WithMain libpadding)
+
+# crypto
+add_executable(test_crypto ${CMAKE_SOURCE_DIR}/lib/crypto/test_crypto.cpp
+                           ${CMAKE_SOURCE_DIR}/lib/crypto/crypto.cpp)
+target_link_libraries(test_crypto PRIVATE Catch2::Catch2WithMain)
 
 # BINARY
 
