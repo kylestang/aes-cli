@@ -5,12 +5,7 @@ using crypto::ciphermode::CipherMode;
 
 class ECB : CipherMode {
     public:
-        void encrypt_inplace(Block& block) const noexcept override {
-        block ^= key_;
-        }
-
-        void decrypt_inplace(Block& block) const noexcept override {
-        block ^= key_;
-        }
+        void encrypt_inplace(Block& block) noexcept override { block ^= key_; }
+        void decrypt_inplace(Block& block) noexcept override { block ^= key_; }
 };
 }  // namespace crypto::ciphermode
