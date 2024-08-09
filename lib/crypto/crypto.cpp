@@ -2,12 +2,12 @@
 
 namespace crypto {
 
-Buffer::Buffer() : buf_{Block{}}, size_{0} {}
+Buffer::Buffer() : buf_{Block{}}, size_{0} {
+    pad_pkcs7();
+}
 
 Buffer::Buffer(Block block, std::size_t n) : buf_{block}, size_{n} {
-    if (n != BLOCK_SIZE) {
-        pad_pkcs7();
-    }
+    pad_pkcs7();
 }
 
 Buffer& Buffer::operator^=(const Buffer& other) noexcept {
@@ -33,10 +33,17 @@ void Buffer::pad_pkcs7() noexcept {
     for (std::size_t i = 0; i < pad_size; ++i) {
         buf_[BLOCK_SIZE - 1 - i] = pad_size;
     }
+    size_ = BLOCK_SIZE;
 }
 
 void Buffer::rm_pad_pkcs7() noexcept {
-    // TODO
+    const uint8_t pad_size = buf_[size_ - 1];
+
+    if (pad_size > BLOCK_SIZE) return;  // no padding
+    size_ = BLOCK_SIZE - pad_size;
+    for (uint8_t i = 0; i < pad_size; ++i) {
+        buf_[BLOCK_SIZE - 1 - i] = 0;
+    }
 }
 
 void block_inc(Block& block) noexcept {

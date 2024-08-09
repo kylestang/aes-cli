@@ -1,38 +1,46 @@
 #include <catch2/catch_test_macros.hpp>
 #include <crypto/crypto.hpp>
-#include <cstddef>
 #include <cstdint>
 
 namespace crypto {
 
-TEST_CASE("crypto::Buffer::pad_pkcs7") {
-    {
-        Buffer buf{{'f', 'f'}, 2};
-        buf.pad_pkcs7();
+// for testing
+bool operator==(const Block& left, const Block& right) {
+    for (uint8_t i = 0; i < left.size(); ++i) {
+        if (left[i] != right[i]) return false;
+    }
+    return true;
+}
 
+TEST_CASE("crypto::Buffer::pad_pkcs7") {
+    SECTION("pads non-empty buffer in ctor") {
+        Buffer buf{{'f', 'f'}, 2};  // it pads in constructor
+        REQUIRE(buf.size() == BLOCK_SIZE);
         const Block expected{'f', 'f', 14, 14, 14, 14, 14, 14,
                              14,  14,  14, 14, 14, 14, 14, 14};
-        for (std::size_t i = 0; i < 8; ++i) {
-            REQUIRE(buf.block()[i] == expected[i]);
-        }
+        REQUIRE(buf.block() == expected);
+        REQUIRE(buf.size() == BLOCK_SIZE);
     }
 
-    {
-        Buffer buf{{}, 0};
-        buf.pad_pkcs7();
+    SECTION("pads empty buffer in ctor") {
+        const Buffer buf{{}, 0};
+        REQUIRE(buf.size() == BLOCK_SIZE);
         for (const uint8_t& b : buf.block()) {
             REQUIRE(b == BLOCK_SIZE);
         }
     }
 }
 
-// for testing
-bool operator==(const Buffer& left, const Buffer& right) {
-    if (left.size() != right.size()) return false;
-    for (uint8_t i = 0; i < left.size(); ++i) {
-        if (left.block()[i] != right.block()[i]) return false;
-    }
-    return true;
+TEST_CASE("crypto::Buffer::rm_pad_pkcs7") {
+    Block original{'f', 'f'};
+    Buffer buf{original, 2};
+    Block expected{
+        'f', 'f', 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    };
+    REQUIRE(buf.block() == expected);
+    buf.rm_pad_pkcs7();
+    REQUIRE(buf.block() == original);
+    REQUIRE(buf.size() == 2);
 }
 
 TEST_CASE("crypto::Buffer - xor") {
@@ -40,18 +48,17 @@ TEST_CASE("crypto::Buffer - xor") {
                    BLOCK_SIZE};
     const Buffer b{{14, 5, 8, 8, 2, 5, 1, 15, 12, 0, 11, 12, 0, 0, 5, 9},
                    BLOCK_SIZE};
-    const Buffer expected{{5, 8, 2, 13, 11, 9, 12, 0, 4, 4, 2, 10, 3, 1, 6, 15},
-                          BLOCK_SIZE};
+    const Block expected{5, 8, 2, 13, 11, 9, 12, 0, 4, 4, 2, 10, 3, 1, 6, 15};
 
     SECTION("operator^") {
         const Buffer result = a ^ b;
-        REQUIRE(result == expected);
+        REQUIRE(result.block() == expected);
     }
 
     SECTION("operator^=") {
         Buffer a_mut = a;
         a_mut ^= b;
-        REQUIRE(a_mut == expected);
+        REQUIRE(a_mut.block() == expected);
     }
 };
 

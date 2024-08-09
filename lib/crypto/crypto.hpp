@@ -25,8 +25,7 @@ struct Buffer {
         const Block& block() const noexcept;
         std::size_t size() const noexcept;
 
-        // add padding for a 128 bit block `buf_`,
-        // with currently `size_` size
+        // PKCS7 padding for a 128 bit block `buf_`
         void pad_pkcs7() noexcept;
         void rm_pad_pkcs7() noexcept;
 };
