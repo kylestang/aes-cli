@@ -1,52 +1,49 @@
-#include <array>
-#include <cstddef>
-#include <cstdint>
+#include <crypto/crypto.hpp>
 
 namespace crypto {
 
-// Cipher block, 128 bits (16 bytes)
-inline const std::size_t BLOCK_SIZE = 16;
+Buffer::Buffer() : buf_{Block{}}, size_{0} {}
 
-using Block = std::array<uint8_t, BLOCK_SIZE>;
-
-// Initial vector, 96 bits (12 bytes)
-inline const std::size_t IV_SIZE = 12;
-using IV = std::array<uint8_t, IV_SIZE>;
-
-inline Block& operator^=(Block& left, const Block& right) {
-    for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
-        left[i] ^= right[i];
+Buffer::Buffer(Block block, std::size_t n) : buf_{block}, size_{n} {
+    if (n != BLOCK_SIZE) {
+        pad_pkcs7();
     }
-    return left;
 }
 
-inline Block operator^(const Block& left, const Block& right) {
-    Block out{};
+Buffer& Buffer::operator^=(const Buffer& other) noexcept {
     for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
-        out[i] = left[i] ^ right[i];
+        buf_[i] ^= other.buf_[i];
     }
-    return out;
+    return *this;
 }
 
-// add padding for a 128 bit block `buf`, with currently `n` size
-inline void pad_block(Block& buf, std::size_t n) {
-    const uint8_t pad_size = BLOCK_SIZE - n;
+Buffer Buffer::operator^(const Buffer& other) const noexcept {
+    Buffer tmp{*this};
+    tmp ^= other;
+    return tmp;
+}
+
+Block& Buffer::block() noexcept { return buf_; }
+const Block& Buffer::block() const noexcept { return buf_; }
+
+std::size_t Buffer::size() const noexcept { return size_; }
+
+void Buffer::pad_pkcs7() noexcept {
+    const uint8_t pad_size = BLOCK_SIZE - size_;
     for (std::size_t i = 0; i < pad_size; ++i) {
-        buf[BLOCK_SIZE - 1 - i] = pad_size;
+        buf_[BLOCK_SIZE - 1 - i] = pad_size;
     }
 }
 
-namespace gcmutils {
+void Buffer::rm_pad_pkcs7() noexcept {
+    // TODO
+}
 
-// since the nonce is 96 bits (12 bytes), the counter potion is only
-// the last 4 bytes. Increment this counter value byte by byte, then wrap
-// when the 4th last bit goes from 255 -> 0
-inline void block_inc(Block& block) noexcept {
+void block_inc(Block& block) noexcept {
     for (uint8_t i = 15; i >= 12; --i) {
         ++block[i];
         if (block[i] != 0) return;
     }
 }
-}  // namespace gcmutils
 
 }  // namespace crypto
