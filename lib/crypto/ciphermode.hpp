@@ -1,18 +1,15 @@
-#include <array>
 #include <crypto/crypto.cpp>
 #include <cstdint>
-#include <random>
 
 namespace crypto::ciphermode {
-
-using crypto::BLOCK_SIZE;
-using Block = std::array<uint8_t, BLOCK_SIZE>;
 
 // write `num` in big endian bytes to the last 8 bytes for `buf`
 void uint64_to_be_bytes(uint64_t num, Block buf) noexcept;
 
 // read (big endian) the last 8 bytes of `buf`
-uint64_t be_bytes_to_uint64(Block buf) noexcept;
+uint64_t be_bytes_to_uint64(const Block& buf) noexcept;
+
+void block_inc(Block& block) noexcept;
 
 // Don't worry about const qualifier for now.
 // TODO: fix qualifier when AES key is integrated
@@ -29,14 +26,11 @@ class CipherMode {
         void key_decrypt(Block& block) noexcept;
 
     public:
-        CipherMode(AES& key, Block iv = {});
+        CipherMode(AES& key, Block iv);
         ~CipherMode() = default;
 
-        const AES& key() const noexcept { return key_; };
-        virtual void encrypt_inplace(Block& plaintext) noexcept;
-        virtual void decrypt_inplace(Block& ciphertext) noexcept;
-
-        Block make_iv() noexcept;
+        virtual void encrypt_inplace(Block& plaintext) noexcept = 0;
+        virtual void decrypt_inplace(Block& ciphertext) noexcept = 0;
 
         CipherMode() = delete;
         CipherMode(CipherMode&) = delete;
@@ -66,11 +60,21 @@ class GCM : CipherMode {
     private:
         Block diffusion_block_;
         Block tag_{};
-        void inc_counter() noexcept;
 
     public:
         GCM(AES& key, Block iv);
         void encrypt_inplace(Block& plaintext) noexcept override;
         void decrypt_inplace(Block& ciphertext) noexcept override;
 };
+
+namespace gcm_utils {
+
+constexpr std::size_t IV_SIZE = 12;
+
+void inc_counter(Block&) noexcept;
+
+Block make_gcm_iv() noexcept;
+
+}  // namespace gcm_utils
+
 }  // namespace crypto::ciphermode
