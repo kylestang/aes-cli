@@ -1,17 +1,8 @@
 #include <crypto/crypto.cpp>
-#include <cstdint>
 
 namespace crypto::ciphermode {
 
-// write `num` in big endian bytes to the last 8 bytes for `buf`
-void uint64_to_be_bytes(uint64_t num, Block buf) noexcept;
-
-// read (big endian) the last 8 bytes of `buf`
-uint64_t be_bytes_to_uint64(const Block& buf) noexcept;
-
-void block_inc(Block& block) noexcept;
-
-// Don't worry about const qualifier for now.
+// don't worry about const qualifier for now.
 // TODO: fix qualifier when AES key is integrated
 class CipherMode {
     public:
@@ -29,9 +20,13 @@ class CipherMode {
         CipherMode(AES& key, Block iv);
         ~CipherMode() = default;
 
+        // encrypt the *padded* block in place
         virtual void encrypt_inplace(Block& plaintext) noexcept = 0;
+
+        // decrypt the *padded* block in place
         virtual void decrypt_inplace(Block& ciphertext) noexcept = 0;
 
+        // don't need these
         CipherMode() = delete;
         CipherMode(CipherMode&) = delete;
         CipherMode(CipherMode&&) = delete;
@@ -62,7 +57,7 @@ class GCM : CipherMode {
         Block tag_{};
         const Block counter_0_;
         std::size_t payload_len_{0};
-    const Block H_;
+        const Block H_;
 
     public:
         GCM(AES& key, Block iv);
@@ -83,8 +78,12 @@ namespace gcm_utils {
 
 constexpr std::size_t IV_SIZE = 12;
 
+// increment the counter bytes (last 4 bytes)
+// of `block`
 void inc_counter(Block&) noexcept;
 
+// make `IV`, with 12 random bytes and
+// and 4 bytes counter initialized to 0
 Block make_gcm_iv() noexcept;
 
 }  // namespace gcm_utils
