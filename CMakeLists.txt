@@ -21,7 +21,10 @@ add_library(libio ${CMAKE_SOURCE_DIR}/lib/io/io.hpp
                   ${CMAKE_SOURCE_DIR}/lib/io/io.cpp)
 target_include_directories(libio PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries(libio PRIVATE ${Boost_LIBRARIES})
-# set_target_properties(libio PROPERTIES LINKER_LANGUAGE CXX)
+
+# crypto
+add_library(crypto ${CMAKE_SOURCE_DIR}/lib/crypto/crypto.hpp
+                   ${CMAKE_SOURCE_DIR}/lib/crypto/crypto.cpp)
 
 # ciphermode
 add_library(libciphermode ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.hpp
@@ -34,18 +37,17 @@ add_executable(test_io ${CMAKE_SOURCE_DIR}/lib/io/test_io.cpp)
 target_link_libraries(test_io PRIVATE Catch2::Catch2WithMain libio)
 
 # crypto
-add_executable(test_crypto ${CMAKE_SOURCE_DIR}/lib/crypto/test_crypto.cpp
-                           ${CMAKE_SOURCE_DIR}/lib/crypto/crypto.cpp)
-target_link_libraries(test_crypto PRIVATE Catch2::Catch2WithMain)
+add_executable(test_crypto ${CMAKE_SOURCE_DIR}/lib/crypto/test_crypto.cpp)
+target_link_libraries(test_crypto PRIVATE crypto Catch2::Catch2WithMain)
 
 # ciphermode
 add_executable(test_ciphermode
                ${CMAKE_SOURCE_DIR}/lib/crypto/test_ciphermode.cpp)
 target_link_libraries(test_ciphermode PRIVATE Catch2::Catch2WithMain
-                                              libciphermode)
+                                              libciphermode crypto)
 
 # BINARY
 
 set(bin aes-cli)
 add_executable(${bin} ${CMAKE_SOURCE_DIR}/app/main.cpp)
-target_link_libraries(${bin} libio libciphermode)
+target_link_libraries(${bin} libio libciphermode crypto)
