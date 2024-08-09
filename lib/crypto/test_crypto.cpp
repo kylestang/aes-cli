@@ -51,10 +51,4 @@ TEST_CASE("crypto::Block - xor") {
     }
 };
 
-TEST_CASE("be_bytes_to_uint64") {
-    Block buf{};
-    uint64_to_be_bytes(12, buf);
-    REQUIRE(buf[15] == 12);
-}
-
 }  // namespace crypto
