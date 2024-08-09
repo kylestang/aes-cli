@@ -21,11 +21,15 @@ add_library(libio ${CMAKE_SOURCE_DIR}/lib/io/io.hpp
                   ${CMAKE_SOURCE_DIR}/lib/io/io.cpp)
 target_include_directories(libio PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries(libio PRIVATE ${Boost_LIBRARIES})
-set_target_properties(libio PROPERTIES LINKER_LANGUAGE CXX)
+# set_target_properties(libio PROPERTIES LINKER_LANGUAGE CXX)
 
 # padding
 add_library(libpadding ${CMAKE_SOURCE_DIR}/lib/crypto/padding.hpp)
 set_target_properties(libpadding PROPERTIES LINKER_LANGUAGE CXX)
+
+# ciphermode
+add_library(libciphermode ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.hpp
+                          ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.cpp)
 
 # TESTS
 
@@ -42,8 +46,14 @@ add_executable(test_crypto ${CMAKE_SOURCE_DIR}/lib/crypto/test_crypto.cpp
                            ${CMAKE_SOURCE_DIR}/lib/crypto/crypto.cpp)
 target_link_libraries(test_crypto PRIVATE Catch2::Catch2WithMain)
 
+# ciphermode
+add_executable(test_ciphermode
+               ${CMAKE_SOURCE_DIR}/lib/crypto/test_ciphermode.cpp)
+target_link_libraries(test_ciphermode PRIVATE Catch2::Catch2WithMain
+                                              libciphermode)
+
 # BINARY
 
 set(bin aes-cli)
 add_executable(${bin} ${CMAKE_SOURCE_DIR}/app/main.cpp)
-target_link_libraries(${bin} libio libpadding)
+target_link_libraries(${bin} libio libpadding libciphermode)
