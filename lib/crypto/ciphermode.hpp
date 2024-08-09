@@ -22,8 +22,8 @@ class CipherMode {
         Block diffusion_block_;
 
         // Kyle: go to ciphermode.cpp and implement these
-        void key_encrypt(Block& block) noexcept;
-        void key_decrypt(Block& block) noexcept;
+        void key_encrypt_inplace(Block& block) noexcept;
+        void key_decrypt_inplace(Block& block) noexcept;
 
     public:
         CipherMode(AES& key, Block iv);
@@ -60,11 +60,23 @@ class GCM : CipherMode {
     private:
         Block diffusion_block_;
         Block tag_{};
+        const Block counter_0_;
+        std::size_t payload_len_{0};
+    const Block H_;
 
     public:
         GCM(AES& key, Block iv);
         void encrypt_inplace(Block& plaintext) noexcept override;
         void decrypt_inplace(Block& ciphertext) noexcept override;
+
+    private:
+        // Since the encryption/decryption of payload is the
+        // same, only the auth tag is slightly different...
+        void encrypt_general(Block& block) noexcept;
+
+        // To encrypt counter 0 for auth tag, and to
+        // initialize `H` multiplication variable
+        Block encrypt_cp(const Block& block) noexcept;
 };
 
 namespace gcm_utils {
