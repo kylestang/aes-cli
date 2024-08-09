@@ -36,9 +36,9 @@ inline void pad_(uint8_t* buf, std::size_t full_block_size,
     }
 };
 
-// add padding for a 128 bit block `buf`
-inline void pad_block(crypto::Block& buf) {
-    pad_(buf.begin(), crypto::BLOCK_SIZE, crypto::BLOCK_SIZE - buf.size());
+// add padding for a 128 bit block `buf`, with currently `n` size
+inline void pad_block(Block& buf, std::size_t n) {
+    pad_(buf.begin(), BLOCK_SIZE, BLOCK_SIZE - n);
 }
 
 inline void uint64_to_be_bytes(uint64_t num, Block& buf) noexcept {
