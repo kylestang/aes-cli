@@ -17,6 +17,7 @@ struct Buffer {
         Buffer();
         Buffer(Block block, std::size_t n);
         Buffer(const Buffer&) = default;
+    ~Buffer() = default;
 
         Buffer& operator^=(const Buffer& other) noexcept;
         Buffer operator^(const Buffer& other) const noexcept;
