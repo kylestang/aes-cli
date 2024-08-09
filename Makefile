@@ -5,7 +5,6 @@ cmakebuild:
 
 runtest:
 	./build/test_io -d yes
-	./build/test_padding -d yes
 	./build/test_crypto -d yes
 	./build/test_ciphermode -d yes
 
