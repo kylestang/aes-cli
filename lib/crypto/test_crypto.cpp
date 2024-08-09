@@ -1,14 +1,18 @@
+#include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <crypto/crypto.cpp>
+#include <cstddef>
+#include <cstdint>
 
 namespace crypto {
 
-TEST_CASE("padding::pad_") {
+TEST_CASE("crypto::pad_block") {
     {
         Block buf{'f', 'f'};
-        pad_(buf.begin(), 8, 8 - 2);
+        pad_block(buf, 2);
 
-        const char expected[8]{'f', 'f', 6, 6, 6, 6, 6, 6};
+        const Block expected{'f', 'f', 14, 14, 14, 14, 14, 14,
+                             14,  14,  14, 14, 14, 14, 14, 14};
         for (std::size_t i = 0; i < 8; ++i) {
             REQUIRE(buf[i] == expected[i]);
         }
@@ -16,9 +20,15 @@ TEST_CASE("padding::pad_") {
 
     {
         Block buf{};
-        pad_(buf.begin(), 8, 8);
+        pad_block(buf, 0);
+
+        Block expected{};
+        for (uint8_t i = 0; i < BLOCK_SIZE; ++i) {
+            expected[i] = BLOCK_SIZE;
+        }
+
         for (const uint8_t& b : buf) {
-            REQUIRE(b == 8);
+            REQUIRE(b == BLOCK_SIZE);
         }
     }
 }
