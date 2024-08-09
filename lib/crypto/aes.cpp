@@ -1,9 +1,9 @@
 #include <array>
+#include <crypto/aes.hpp>
 #include <crypto/crypto.hpp>
+#include <crypto/key.hpp>
+#include <crypto/tables.hpp>
 #include <cstdint>
-
-#include "key.hpp"
-#include "tables.hpp"
 
 namespace crypto {
 

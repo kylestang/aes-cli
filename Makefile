@@ -13,3 +13,5 @@ debug:
 release:
 	cmake -H. -Bbuild -DTEST=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_ASAN=OFF -DENABLE_UBSAN=OFF
 	cmake --build build
+
+.PHONY: test debug release
