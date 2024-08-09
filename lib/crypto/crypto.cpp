@@ -6,11 +6,13 @@ namespace crypto {
 
 // Cipher block, 128 bits (16 bytes)
 inline const std::size_t BLOCK_SIZE = 16;
+
 using Block = std::array<uint8_t, BLOCK_SIZE>;
 
 // Initial vector, 96 bits (12 bytes)
 inline const std::size_t IV_SIZE = 12;
 using IV = std::array<uint8_t, IV_SIZE>;
+
 
 inline Block& operator^=(Block& left, const Block& right) {
     for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
@@ -25,6 +27,18 @@ inline Block operator^(const Block& left, const Block& right) {
         out[i] = left[i] ^ right[i];
     }
     return out;
+}
+
+inline void pad_(uint8_t* buf, std::size_t full_block_size,
+                 std::size_t pad_size) {
+    for (std::size_t i = 0; i < pad_size; ++i) {
+        buf[full_block_size - 1 - i] = pad_size;
+    }
+};
+
+// add padding for a 128 bit block `buf`
+inline void pad_block(crypto::Block& buf) {
+    pad_(buf.begin(), crypto::BLOCK_SIZE, crypto::BLOCK_SIZE - buf.size());
 }
 
 inline void uint64_to_be_bytes(uint64_t num, Block& buf) noexcept {

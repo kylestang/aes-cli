@@ -3,6 +3,26 @@
 
 namespace crypto {
 
+TEST_CASE("padding::pad_") {
+    {
+        Block buf{'f', 'f'};
+        pad_(buf.begin(), 8, 8 - 2);
+
+        const char expected[8]{'f', 'f', 6, 6, 6, 6, 6, 6};
+        for (std::size_t i = 0; i < 8; ++i) {
+            REQUIRE(buf[i] == expected[i]);
+        }
+    }
+
+    {
+        Block buf{};
+        pad_(buf.begin(), 8, 8);
+        for (const uint8_t& b : buf) {
+            REQUIRE(b == 8);
+        }
+    }
+}
+
 TEST_CASE("crypto::Block - xor") {
     const Block a = {11, 13, 10, 5, 9, 12, 13, 15, 8, 4, 9, 6, 3, 1, 3, 6};
     const Block b = {14, 5, 8, 8, 2, 5, 1, 15, 12, 0, 11, 12, 0, 0, 5, 9};
