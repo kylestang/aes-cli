@@ -7,7 +7,6 @@
 #include <boost/program_options/variables_map.hpp>
 #include <cassert>
 #include <cctype>
-#include <crypto/crypto.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -73,14 +72,13 @@ class IO {
         IO(std::string in_filename, std::string out_filename, Key key,
            ModeOfOperation mode);
 
-
         ~IO() = default;
 
         Key key() const;
 
         ModeOfOperation mode_of_op() const;
 
-        std::size_t read(crypto::Block& buf);
+        std::size_t read(uint8_t* iter_start, std::size_t n);
 
         void write(char* buf);
 
