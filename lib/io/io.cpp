@@ -71,12 +71,11 @@ Key IO::key() const { return key_; }
 
 ModeOfOperation IO::mode_of_op() const { return mode_; };
 
-std::size_t IO::read(crypto::Block& buf) {
-    std::size_t s = crypto::BLOCK_SIZE;
+std::size_t IO::read(uint8_t* iter_start, std::size_t n) {
     if (inputfile_) {
-        return inputfile_->readsome((char*)buf.begin(), s);
+        return inputfile_->readsome((char*)iter_start, n);
     }
-    return std::cin.readsome((char*)buf.begin(), s);
+    return std::cin.readsome((char*)iter_start, n);
 }
 
 void IO::write(char* buf) {

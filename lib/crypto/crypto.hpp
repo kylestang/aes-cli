@@ -5,7 +5,7 @@
 namespace crypto {
 
 // Cipher block, 128 bits (16 bytes)
-inline const std::size_t BLOCK_SIZE = 16;
+inline constexpr const std::size_t BLOCK_SIZE = 16;
 using Block = std::array<uint8_t, BLOCK_SIZE>;
 
 struct Buffer {
@@ -31,7 +31,7 @@ struct Buffer {
 };
 
 // Initial vector, 96 bits (12 bytes)
-inline const std::size_t IV_SIZE = 12;
+constexpr const std::size_t IV_SIZE = 12;
 using IV = std::array<uint8_t, IV_SIZE>;
 
 namespace gcmutils {
