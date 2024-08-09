@@ -7,7 +7,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <cassert>
 #include <cctype>
-#include <crypto/crypto.cpp>
+#include <crypto/crypto.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
