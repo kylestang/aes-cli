@@ -4,9 +4,10 @@ cmakebuild:
 	cmake --build build
 
 runtest:
-	./build/test_io
-	./build/test_padding
-	./build/test_crypto
+	./build/test_io -d yes
+	./build/test_padding -d yes
+	./build/test_crypto -d yes
+	./build/test_ciphermode -d yes
 
 
 test: cmakebuild runtest
