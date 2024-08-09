@@ -96,7 +96,7 @@ Buffer make_gcm_iv() noexcept {
     std::mt19937 rng{dev()};
     std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
 
-    Buffer iv{};
+    Buffer iv{{}, BLOCK_SIZE};
     for (uint8_t i = 0; i < gcm_utils::IV_SIZE; ++i) {
         iv.block()[i] = dist(rng);
     }
