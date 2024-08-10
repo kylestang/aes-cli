@@ -1,8 +1,11 @@
+#include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
 #include <random>
 
 namespace crypto::ciphermode {
+
+using BigUint = boost::multiprecision::uint256_t;
 
 // CipherMode abstract class
 CipherMode::CipherMode(AES& key, Buffer iv)
@@ -45,10 +48,12 @@ void CBC::decrypt_inplace(Buffer& ciphertext) noexcept {
 
 // GCM
 GCM::GCM(AES& key, Buffer iv)
-    : CipherMode{key, iv},
-      counter_0_{encrypt_cp(iv)},
-      H_{encrypt_cp(Buffer{})} {
-    key_encrypt_inplace(tag_);
+    : CipherMode{key, iv}, tag_{encrypt_cp(Buffer{}), encrypt_cp(iv)} {
+    // valid iv/counter buf, where the first 12 bytes are random,
+    // but the rest are 0's
+    for (uint8_t i = 12; i < diffusion_block_.size(); ++i) {
+        assert(diffusion_block_.block()[i] == 0);
+    }
 
     // the actual message starts with counter value 1
     gcm_utils::inc_counter(diffusion_block_);
@@ -102,6 +107,30 @@ Buffer make_gcm_iv() noexcept {
     }
 
     return iv;
+}
+
+uint128_t AuthTag::bytes_to_uint128_t(const Block& bytes) {
+    uint128_t result = 0;
+
+    const uint8_t M = bytes.size();
+    for (uint8_t i = 0; i < M; ++i) {
+        result |= uint128_t(bytes[bytes.size() - 1 - i]) << (i * 8);
+    }
+
+    return result;
+};
+
+void AuthTag::uint128_t_to_bytes(const uint128_t& n, Block& bytes) {
+    const uint8_t M = bytes.size();
+    uint128_t bitmask = 0xff;
+    for (uint8_t i = 0; i < M; ++i) {
+        bytes[i] = uint8_t((n >> ((15 - i) * 8) & 0xff));
+    }
+};
+
+void AuthTag::update(Block ciphertext) {
+    constexpr static uint128_t reduction_polynomial =
+        uint128_t(0xE100000000000000) << 64;
 }
 
 }  // namespace gcm_utils
