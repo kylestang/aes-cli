@@ -7,7 +7,7 @@ namespace crypto::ciphermode {
 // TODO: fix qualifier when AES key is integrated
 class CipherMode {
     public:
-        using AES = Block;
+        using AES = AesKey;
 
     protected:
         AesKey& key_;
