@@ -1,7 +1,10 @@
+#include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/crypto.hpp>
 #include <crypto/key.hpp>
 
 namespace crypto::ciphermode {
+
+using boost::multiprecision::uint128_t;
 
 // don't worry about const qualifier for now.
 // TODO: fix qualifier when AES key is integrated
@@ -52,13 +55,43 @@ class CBC : CipherMode {
         void decrypt_inplace(Buffer& ciphertext) noexcept override;
 };
 
+// GCM
+namespace gcm_utils {
+
+constexpr std::size_t IV_SIZE = 12;
+
+// increment the counter bytes (last 4 bytes)
+// of `block`
+void inc_counter(Buffer&) noexcept;
+
+// make `IV`, with 12 random bytes and
+// and 4 bytes counter initialized to 0
+Buffer make_gcm_iv() noexcept;
+
+class AuthTag {
+    private:
+        const Buffer H_;
+        const Buffer counter_0_;
+
+    public:
+        AuthTag(Buffer H, Buffer counter_0) : H_{H}, counter_0_{counter_0} {};
+
+        // pass by copy, mutate `ciphertext` in calculations
+        void update(Block ciphertext);
+
+        // convert 16 byte array in to a 128 bit unsigned integer
+        static uint128_t bytes_to_uint128_t(const Block&);
+        static void uint128_t_to_bytes(const uint128_t& n, Block&);
+
+    private:
+};
+
+}  // namespace gcm_utils
+
 class GCM : CipherMode {
     private:
-        Buffer diffusion_block_;
-        Buffer tag_{};
-        const Buffer counter_0_;
+        gcm_utils::AuthTag tag_;
         std::size_t payload_len_{0};
-        const Buffer H_;
 
     public:
         GCM(AES& key, Buffer iv);
@@ -74,19 +107,5 @@ class GCM : CipherMode {
         // initialize `H` multiplication variable
         Buffer encrypt_cp(const Buffer& block) noexcept;
 };
-
-namespace gcm_utils {
-
-constexpr std::size_t IV_SIZE = 12;
-
-// increment the counter bytes (last 4 bytes)
-// of `block`
-void inc_counter(Buffer&) noexcept;
-
-// make `IV`, with 12 random bytes and
-// and 4 bytes counter initialized to 0
-Buffer make_gcm_iv() noexcept;
-
-}  // namespace gcm_utils
 
 }  // namespace crypto::ciphermode

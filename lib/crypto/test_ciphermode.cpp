@@ -1,6 +1,8 @@
+#include <boost/multiprecision/cpp_int.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
+#include <limits>
 
 namespace crypto::ciphermode {
 
@@ -33,8 +35,10 @@ TEST_CASE("gcm_utils::inc_counter") {
     }
 }
 
+namespace gcm_utils {
+
 TEST_CASE("gcm_utils::make_gcm_iv") {
-    Buffer buf = gcm_utils::make_gcm_iv();
+    Buffer buf = make_gcm_iv();
 
     // last 4 bytes initialized to 0, these are the `counter` bytes.
     uint8_t counter = 0;
@@ -60,5 +64,34 @@ TEST_CASE("gcm_utils::make_gcm_iv") {
         REQUIRE_FALSE(eq);
     }
 }
+
+TEST_CASE("AuthTag::bytes_to_uint128_t and AuthTag::uint128_t_to_bytes") {
+    using boost::multiprecision::uint128_t;
+
+    {
+        const Block bytes{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255};
+        const uint128_t result = AuthTag::bytes_to_uint128_t(bytes);
+        REQUIRE(result == uint128_t(255));
+    }
+
+    {
+        const Block bytes{0,   0,   0,   0,   0,   0,   0,   0,
+                          255, 255, 255, 255, 255, 255, 255, 255};
+        const uint128_t result = AuthTag::bytes_to_uint128_t(bytes);
+        REQUIRE(result == uint128_t(0xffffffffffffffff));
+    }
+
+    {
+        const Block bytes{0,   0,   0,   0,   0,   0,   0,   0,
+                          255, 255, 255, 255, 255, 255, 255, 255};
+        const uint128_t result = AuthTag::bytes_to_uint128_t(bytes);
+        Block conv_result{};
+        AuthTag::uint128_t_to_bytes(result, conv_result);
+
+        REQUIRE(bytes == conv_result);
+    }
+}
+
+}  // namespace gcm_utils
 
 }  // namespace crypto::ciphermode
