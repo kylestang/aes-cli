@@ -34,14 +34,14 @@ class CipherMode {
         CipherMode& operator=(CipherMode&&) = delete;
 };
 
-class ECB : CipherMode {
+class ECB : public CipherMode {
     public:
         ECB(AES&);
         void encrypt_inplace(Buffer& plaintext) noexcept override;
         void decrypt_inplace(Buffer& ciphertext) noexcept override;
 };
 
-class CBC : CipherMode {
+class CBC : public CipherMode {
     private:
         Buffer diffusion_block_;
 
@@ -51,7 +51,7 @@ class CBC : CipherMode {
         void decrypt_inplace(Buffer& ciphertext) noexcept override;
 };
 
-class GCM : CipherMode {
+class GCM : public CipherMode {
     private:
         Buffer diffusion_block_;
         Buffer tag_{};
