@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 project(aes-cli LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -45,6 +45,10 @@ add_library(ciphermode ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.hpp
                        ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.cpp)
 target_link_libraries(ciphermode crypto)
 
+# tables
+add_library(tables ${CMAKE_SOURCE_DIR}/lib/crypto/tables.hpp
+                       ${CMAKE_SOURCE_DIR}/lib/crypto/tables.cpp)
+
 # TESTS
 option(TEST "compile test binaries" OFF)
 if(${TEST})
@@ -60,6 +64,10 @@ if(${TEST})
   add_executable(test_ciphermode
                  ${CMAKE_SOURCE_DIR}/lib/crypto/test_ciphermode.cpp)
   target_link_libraries(test_ciphermode Catch2::Catch2WithMain ciphermode)
+
+  # key
+  add_executable(test_key ${CMAKE_SOURCE_DIR}/lib/crypto/test_key.cpp)
+  target_link_libraries(test_key PRIVATE Catch2::Catch2WithMain tables errors)
 endif()
 
 # BINARY

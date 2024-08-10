@@ -4,6 +4,7 @@ test:
 	./build/test_io -d yes
 	./build/test_crypto -d yes
 	./build/test_ciphermode -d yes
+	./build/test_key
 
 debug:
 	cmake -H. -Bbuild -DTEST=OFF -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON -DENABLE_UBSAN=ON

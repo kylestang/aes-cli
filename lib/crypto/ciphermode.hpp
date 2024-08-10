@@ -1,4 +1,5 @@
 #include <crypto/crypto.hpp>
+#include <crypto/key.hpp>
 
 namespace crypto::ciphermode {
 
@@ -6,10 +7,10 @@ namespace crypto::ciphermode {
 // TODO: fix qualifier when AES key is integrated
 class CipherMode {
     public:
-        using AES = Block;  // TODO: Kyle change this type
+        using AES = Block;
 
     protected:
-        AES& key_;  // Kyle update this key to your AES class
+        AesKey& key_;
         Buffer diffusion_block_;
 
         // Kyle: go to ciphermode.cpp and implement these
