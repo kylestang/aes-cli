@@ -102,7 +102,7 @@ std::vector<uint8_t> GCM::final_block(Buffer& last_ciphertext) noexcept {
 namespace gcm_utils {
 
 void inc_counter(Buffer& buffer) noexcept {
-    Block& block{buffer.block()};
+    Buffer::Bytes& block = buffer.bytes();
     for (uint8_t i = BLOCK_SIZE - 1; i >= gcm_utils::IV_SIZE; --i) {
         ++block[i];
         if (block[i] != 0) return;
@@ -110,15 +110,15 @@ void inc_counter(Buffer& buffer) noexcept {
 }
 
 Buffer make_gcm_iv() noexcept {
-    Buffer iv{crypto::make_iv(), BLOCK_SIZE};
+    Block block{};
+    fill_bytes_n(block, 12);
 
     // counter bytes, zero values for the last 4 bytes
-    Block& block = iv.block();
     for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
         block[i] = 0;
     }
 
-    return iv;
+    return Buffer{block, BLOCK_SIZE};
 }
 
 uint128_t AuthTag::bytes_to_uint128_t(const Block& bytes) {

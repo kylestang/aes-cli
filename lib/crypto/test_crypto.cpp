@@ -7,24 +7,28 @@ namespace crypto {
 // for testing
 bool operator==(const Buffer& left, const Block& right) {
     if (left.size() != right.size()) return false;
-    for (uint8_t i = 0; i < left.size(); ++i) {
-        if (left.block()[i] != right[i]) return false;
-    }
-    return true;
+    const Block block = left.block();
+    return block == right;
+}
+
+// for testing
+bool operator==(const Buffer& left, const Buffer& right) {
+    return left.bytes() == right.bytes();
 }
 
 TEST_CASE("crypto::Buffer::pad_pkcs7") {
-    SECTION("pads non-empty buffer in ctor") {
-        Buffer buf{{'f', 'f'}, 2};  // it pads in constructor
+    SECTION("non-empty buffer") {
+        Buffer buf{{'f', 'f'}, 2};
+        buf.pad_pkcs7();
         REQUIRE(buf.size() == BLOCK_SIZE);
         const Block expected{'f', 'f', 14, 14, 14, 14, 14, 14,
                              14,  14,  14, 14, 14, 14, 14, 14};
         REQUIRE(buf == expected);
-        REQUIRE(buf.size() == BLOCK_SIZE);
     }
 
-    SECTION("pads empty buffer in ctor") {
-        const Buffer buf{{}, 0};
+    SECTION("empty buffer") {
+        Buffer buf{{}, 0};
+        buf.pad_pkcs7();
         REQUIRE(buf.size() == BLOCK_SIZE);
         for (const uint8_t& b : buf.block()) {
             REQUIRE(b == BLOCK_SIZE);
@@ -34,52 +38,29 @@ TEST_CASE("crypto::Buffer::pad_pkcs7") {
 
 TEST_CASE("crypto::Buffer::rm_pad_pkcs7") {
     SECTION("removes padding properly") {
-        Block original{'f', 'f'};
-        Buffer buf{original, 2};
-        Block expected{
-            'f', 'f', 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-        };
-        REQUIRE(buf == expected);
+        Buffer buf{{'f', 'f'}, 2};
+        const Buffer expected{buf};
+
+        buf.pad_pkcs7();
+        REQUIRE(buf != expected);
+        REQUIRE(buf.size() == BLOCK_SIZE);
         buf.rm_pad_pkcs7();
-        REQUIRE(buf == original);
+
+        REQUIRE(buf == expected);
         REQUIRE(buf.size() == 2);
     }
 
     SECTION("does not modify with invalid padding") {
-        {
-            Block original{
-                255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 12,  2,   0,   0,
-            };
-            Buffer buf{original, 14};
-            buf.pad_pkcs7();
-            buf.rm_pad_pkcs7();
-            REQUIRE(buf == original);
+        const Block data{
+            255, 255, 255, 255, 255, 255, 255, 255,
+            255, 255, 255, 255, 12,  2,   3,   3,
         };
 
-        {
-            Block original{
-                255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 12,  2,   0,   0,
-            };
-            Buffer buf{original, 14};
-            buf.pad_pkcs7();
-            REQUIRE(buf != original);
-            buf.rm_pad_pkcs7();
-            REQUIRE(buf == original);
-        };
+        const Buffer expected{data, BLOCK_SIZE};
+        Buffer buf{expected};
 
-        {
-            Block original{
-                255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 12,  1,   1,   0,
-            };
-            Buffer buf{original, 15};
-            buf.pad_pkcs7();
-            REQUIRE(buf != original);
-            buf.rm_pad_pkcs7();
-            REQUIRE(buf == original);
-        };
+        buf.rm_pad_pkcs7();
+        REQUIRE(buf == expected);
     };
 };
 
@@ -102,9 +83,11 @@ TEST_CASE("crypto::Buffer - xor") {
     }
 };
 
-TEST_CASE("crypto::make_iv") {
-    std::array iv1 = make_iv();
-    std::array iv2 = make_iv();
+TEST_CASE("crypto::fill_bytes_n") {
+    Block iv1{};
+    Block iv2{};
+    crypto::fill_bytes_n(iv1, 12);
+    crypto::fill_bytes_n(iv2, 12);
     REQUIRE_FALSE(iv1 == iv2);
 }
 
