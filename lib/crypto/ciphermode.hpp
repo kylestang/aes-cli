@@ -26,13 +26,16 @@ class CipherMode {
         ~CipherMode() = default;
 
         // encrypt the *padded* block in place
-        virtual void encrypt_inplace(Buffer& plaintext) noexcept = 0;
+        virtual Buffer encrypt(const Buffer& plaintext) noexcept = 0;
 
         // decrypt the *padded* block in place
-        virtual void decrypt_inplace(Buffer& ciphertext) noexcept = 0;
+        virtual Buffer decrypt(const Buffer& ciphertext) noexcept = 0;
 
         // final call to compute the authenticated tag.
-        virtual std::vector<uint8_t> final_block() noexcept { return {}; }
+        virtual std::vector<uint8_t> final_block(
+            Buffer& last_ciphertext) noexcept {
+            return {};
+        }
 
         // don't need these
         CipherMode() = delete;
@@ -45,8 +48,8 @@ class CipherMode {
 class ECB : CipherMode {
     public:
         ECB(AES&);
-        void encrypt_inplace(Buffer& plaintext) noexcept override;
-        void decrypt_inplace(Buffer& ciphertext) noexcept override;
+        Buffer encrypt(const Buffer& plaintext) noexcept override;
+        Buffer decrypt(const Buffer& ciphertext) noexcept override;
 };
 
 class CBC : CipherMode {
@@ -55,8 +58,8 @@ class CBC : CipherMode {
 
     public:
         CBC(AES& key, Buffer iv);
-        void encrypt_inplace(Buffer& plaintext) noexcept override;
-        void decrypt_inplace(Buffer& ciphertext) noexcept override;
+        Buffer encrypt(const Buffer& plaintext) noexcept override;
+        Buffer decrypt(const Buffer& ciphertext) noexcept override;
 };
 
 // GCM
@@ -111,9 +114,9 @@ class GCM : CipherMode {
 
     public:
         GCM(AES& key, Buffer iv);
-        void encrypt_inplace(Buffer& plaintext) noexcept override;
-        void decrypt_inplace(Buffer& ciphertext) noexcept override;
-        std::vector<uint8_t> final_block() noexcept override;
+        Buffer encrypt(const Buffer& plaintext) noexcept override;
+        Buffer decrypt(const Buffer& ciphertext) noexcept override;
+        std::vector<uint8_t> final_block(Buffer& block) noexcept override;
 
     private:
         // Since the encryption/decryption of payload is the
