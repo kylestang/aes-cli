@@ -97,13 +97,12 @@ void inc_counter(Buffer& buffer) noexcept {
 }
 
 Buffer make_gcm_iv() noexcept {
-    std::random_device dev;
-    std::mt19937 rng{dev()};
-    std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
+    Buffer iv{crypto::make_iv(), BLOCK_SIZE};
 
-    Buffer iv{{}, BLOCK_SIZE};
-    for (uint8_t i = 0; i < gcm_utils::IV_SIZE; ++i) {
-        iv.block()[i] = dist(rng);
+    // counter bytes, zero values for the last 4 bytes 
+    Block& block = iv.block();
+    for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
+        block[i] = 0;
     }
 
     return iv;

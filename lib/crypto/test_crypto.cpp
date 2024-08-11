@@ -62,4 +62,10 @@ TEST_CASE("crypto::Buffer - xor") {
     }
 };
 
+TEST_CASE("crypto::make_iv") {
+    std::array<uint8_t, 12> iv1 = make_iv<12>();
+    std::array<uint8_t, 12> iv2 = make_iv<12>();
+    REQUIRE_FALSE(iv1 == iv2);
+}
+
 }  // namespace crypto
