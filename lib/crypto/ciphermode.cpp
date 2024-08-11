@@ -1,8 +1,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
-#include <optional>
-#include <random>
 #include <vector>
 
 namespace crypto::ciphermode {
@@ -24,28 +22,35 @@ void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
 // ECB
 ECB::ECB(AES& key) : CipherMode{key, Buffer{}} {}
 
-void ECB::encrypt_inplace(Buffer& block) noexcept {
-    key_encrypt_inplace(block);
+Buffer ECB::encrypt(const Buffer& plaintext) noexcept {
+    Buffer ciphertext{plaintext};
+    key_encrypt_inplace(ciphertext);
+    return ciphertext;
 }
 
-void ECB::decrypt_inplace(Buffer& block) noexcept {
-    key_decrypt_inplace(block);
+Buffer ECB::decrypt(const Buffer& ciphertext) noexcept {
+    Buffer plaintext{ciphertext};
+    key_decrypt_inplace(plaintext);
+    return plaintext;
 }
 
 // CBC
 CBC::CBC(AES& key, Buffer iv) : CipherMode{key, iv} {}
 
-void CBC::encrypt_inplace(Buffer& plaintext) noexcept {
+Buffer CBC::encrypt(const Buffer& ciphertext) noexcept {
+    Buffer plaintext{ciphertext};
     plaintext ^= diffusion_block_;
     key_encrypt_inplace(plaintext);
     diffusion_block_ = plaintext;  // plaintext is now the ciphertext
+    return plaintext;
 }
 
-void CBC::decrypt_inplace(Buffer& ciphertext) noexcept {
-    const Buffer new_diff_block = ciphertext;
-    key_decrypt_inplace(ciphertext);
-    ciphertext ^= diffusion_block_;
-    diffusion_block_ = new_diff_block;
+Buffer CBC::decrypt(const Buffer& ciphertext) noexcept {
+    Buffer plaintext{ciphertext};
+    key_decrypt_inplace(plaintext);
+    plaintext ^= diffusion_block_;
+    diffusion_block_ = ciphertext;
+    return plaintext;
 }
 
 // GCM
@@ -69,25 +74,27 @@ void GCM::encrypt_general(Buffer& m) noexcept {
     payload_len_ += m.size();
 };
 
-void GCM::encrypt_inplace(Buffer& plaintext) noexcept {
-    encrypt_general(plaintext);
-
-    // TODO: compute tag
+Buffer GCM::encrypt(const Buffer& plaintext) noexcept {
+    Buffer ciphertext{plaintext};
+    encrypt_general(ciphertext);
+    tag_.update_tag(ciphertext.block());
+    return ciphertext;
 }
 
-void GCM::decrypt_inplace(Buffer& ciphertext) noexcept {
-    encrypt_general(ciphertext);
-
-    // TODO: compute tag
+Buffer GCM::decrypt(const Buffer& ciphertext) noexcept {
+    tag_.update_tag(ciphertext.block());
+    Buffer plaintext{ciphertext};
+    encrypt_general(plaintext);
+    return plaintext;
 }
 
 Buffer GCM::encrypt_cp(const Buffer& block) noexcept {
     Buffer buf{block};
-    encrypt_inplace(buf);
+    encrypt(buf);
     return buf;
 };
 
-std::vector<uint8_t> GCM::final_block() noexcept {
+std::vector<uint8_t> GCM::final_block(Buffer& last_ciphertext) noexcept {
     // TODO: implement this
     return {};
 }
