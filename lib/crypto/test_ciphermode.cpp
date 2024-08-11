@@ -2,17 +2,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
-#include <limits>
 
 namespace crypto::ciphermode {
 
 TEST_CASE("gcm_utils::inc_counter") {
+    const Buffer data{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255},
+                      BLOCK_SIZE};
     SECTION("bit cascades") {
-        Buffer buf{{}, BLOCK_SIZE};
-        buf.block()[15] = 255;
-        buf.block()[14] = 255;
-        buf.block()[13] = 255;
-        buf.block()[12] = 0;
+        Buffer buf{data};
         gcm_utils::inc_counter(buf);
 
         REQUIRE(buf.block()[12] == 1);
@@ -22,15 +19,12 @@ TEST_CASE("gcm_utils::inc_counter") {
     }
 
     SECTION("bit wrapped") {
-        Buffer buf{};
-        buf.block()[15] = 255;
-        buf.block()[14] = 255;
-        buf.block()[13] = 255;
-        buf.block()[12] = 255;
+        Buffer buf{data};
+        buf[12] = 255;
         gcm_utils::inc_counter(buf);
 
         for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
-            REQUIRE(buf.block()[i] == 0);
+            REQUIRE(buf.at(i) == 0);
         }
     }
 }

@@ -4,16 +4,14 @@
 
 namespace crypto {
 
-Buffer::Buffer(Block block, std::size_t n) {
-    buf_ = Buffer::Bytes(n);
-    buf_.reserve(BLOCK_SIZE);
-    std::copy(block.begin(), block.end(), buf_.begin());
-    assert(buf_.size() == n);
+Buffer::Buffer(Block block, std::size_t n) : Buffer::Bytes(n) {
+    reserve(BLOCK_SIZE);
+    std::copy_n(block.begin(), n, begin());
 }
 
 Buffer& Buffer::operator^=(const Buffer& other) noexcept {
     for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
-        buf_[i] ^= other.buf_[i];
+        at(i) ^= other.at(i);
     }
     return *this;
 }
@@ -26,35 +24,36 @@ Buffer Buffer::operator^(const Buffer& other) const noexcept {
 
 Block Buffer::block() const noexcept {
     Block b{};
-    std::copy(buf_.begin(), buf_.end(), b.begin());
+    std::copy(begin(), end(), b.begin());
     return b;
 }
 
-Buffer::Bytes& Buffer::bytes() noexcept { return buf_; }
-const Buffer::Bytes& Buffer::bytes() const noexcept { return buf_; }
-
-std::size_t Buffer::size() const noexcept { return buf_.size(); }
+Buffer::Bytes& Buffer::bytes() noexcept { return *this; }
+const Buffer::Bytes& Buffer::bytes() const noexcept { return *this; }
 
 void Buffer::pad_pkcs7() noexcept {
     const uint8_t pad_size = BLOCK_SIZE - size();
+    resize(BLOCK_SIZE);
     for (std::size_t i = 0; i < pad_size; ++i) {
-        buf_[BLOCK_SIZE - 1 - i] = pad_size;
+        at(BLOCK_SIZE - 1 - i) = pad_size;
     }
 }
 
 void Buffer::rm_pad_pkcs7() noexcept {
-    const uint8_t pad_size = buf_[size() - 1];
+    const uint8_t pad_size = at(size() - 1);
 
     if (pad_size > BLOCK_SIZE) return;  // no padding
 
     // valid padding?
     for (uint8_t i = 0; i < pad_size; ++i) {
-        if (buf_[BLOCK_SIZE - 1 - i] != pad_size) return;
+        if (at(BLOCK_SIZE - 1 - i) != pad_size) return;
     }
 
     for (uint8_t i = 0; i < pad_size; ++i) {
-        buf_[BLOCK_SIZE - 1 - i] = 0;
+        pop_back();
     }
+
+    shrink_to_fit();
 }
 
 void block_inc(Block& block) noexcept {

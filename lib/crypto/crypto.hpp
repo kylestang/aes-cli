@@ -10,27 +10,22 @@ namespace crypto {
 inline constexpr const std::size_t BLOCK_SIZE = 16;
 using Block = std::array<uint8_t, BLOCK_SIZE>;
 
-inline Block make_iv() {
-    Block bytes{};
-
+inline void fill_bytes_n(Block& buf, std::size_t n) {
     std::random_device dev;
     std::mt19937 rng{dev()};
     std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
 
-    for (uint8_t& byte : bytes) {
-        byte = dist(rng);
+    for (uint8_t i = 0; i < n; ++i) {
+        buf[i] = dist(rng);
     }
-
-    return bytes;
 }
 
-struct Buffer {
-    private:
+struct Buffer : public std::vector<uint8_t> {
+    public:
         using Bytes = std::vector<uint8_t>;
-        Bytes buf_{BLOCK_SIZE};
 
     public:
-        Buffer() {};
+        Buffer(){};
         Buffer(Block block, std::size_t n);
         Buffer(const Buffer&) = default;
         ~Buffer() = default;
@@ -42,8 +37,6 @@ struct Buffer {
 
         Bytes& bytes() noexcept;
         const Bytes& bytes() const noexcept;
-
-        std::size_t size() const noexcept;
 
         // PKCS7 padding for a 128 bit block `buf_`
         void pad_pkcs7() noexcept;
