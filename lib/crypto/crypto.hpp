@@ -1,12 +1,27 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <random>
 
 namespace crypto {
 
 // Cipher block, 128 bits (16 bytes)
 inline constexpr const std::size_t BLOCK_SIZE = 16;
 using Block = std::array<uint8_t, BLOCK_SIZE>;
+
+inline Block make_iv() {
+    Block bytes{};
+
+    std::random_device dev;
+    std::mt19937 rng{dev()};
+    std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
+
+    for (uint8_t& byte : bytes) {
+        byte = dist(rng);
+    }
+
+    return bytes;
+}
 
 struct Buffer {
     private:
@@ -17,7 +32,7 @@ struct Buffer {
         Buffer();
         Buffer(Block block, std::size_t n);
         Buffer(const Buffer&) = default;
-    ~Buffer() = default;
+        ~Buffer() = default;
 
         Buffer& operator^=(const Buffer& other) noexcept;
         Buffer operator^(const Buffer& other) const noexcept;
