@@ -128,9 +128,40 @@ void AuthTag::uint128_t_to_bytes(const uint128_t& n, Block& bytes) {
     }
 };
 
-void AuthTag::update(Block ciphertext) {
-    constexpr static uint128_t reduction_polynomial =
-        uint128_t(0xE100000000000000) << 64;
+void AuthTag::update_tag(const Block& ciphertext) {
+    // `uint128_t` representation of reduction polynomial:
+    // x^127 + x^7 + x^2 + x^1 + 1
+    //
+    // Since we're doing binary arithmetic in the Galois
+    // field with 127 bits, instead of 128, so the last 1
+    // is dropped, (thus the hex ends in digit 0.)
+    //
+    // It is to keep the binary within 127 bits. Math!
+    constexpr static uint128_t R = uint128_t(0xE100000000000000) << 64;
+
+    uint128_t ciphertext_value = AuthTag::bytes_to_uint128_t(ciphertext);
+
+    uint128_t bitmask = 1;
+    for (uint8_t i = 0; i < 128; ++i) {
+        if (H_ & bitmask) {
+            tag_ ^= ciphertext_value;
+        }
+
+        // if msb is set, xor with R to clamp
+        const bool msb_set = (ciphertext_value & (uint128_t(1) << 127)) != 0;
+        if (msb_set) {
+            ciphertext_value ^= R;
+        }
+
+        ciphertext_value <<= 1;
+        bitmask <<= 1;
+    }
+}
+
+Block AuthTag::tag() const {
+    Block block{};
+    AuthTag::uint128_t_to_bytes(tag_, block);
+    return block;
 }
 
 }  // namespace gcm_utils

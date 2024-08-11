@@ -70,18 +70,30 @@ Buffer make_gcm_iv() noexcept;
 
 class AuthTag {
     private:
-        const Buffer H_;
+        // Param for Galois auth tag
+        const uint128_t H_;
+
+        // XOR last ciphertext to make the tag
         const Buffer counter_0_;
 
-    public:
-        AuthTag(Buffer H, Buffer counter_0) : H_{H}, counter_0_{counter_0} {};
+        // starts with 0, since we're not supporting
+        // authenticated data right now.
+        uint128_t tag_{0};
 
-        // pass by copy, mutate `ciphertext` in calculations
-        void update(Block ciphertext);
+    public:
+        AuthTag(Buffer H, Buffer counter_0)
+            : H_{AuthTag::bytes_to_uint128_t(H.block())},
+              counter_0_{counter_0} {};
+
+        // Reference: Section 3: The Field `GF(2^128)`
+        //
+        // https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
+        void update_tag(const Block& ciphertext);
 
         // convert 16 byte array in to a 128 bit unsigned integer
         static uint128_t bytes_to_uint128_t(const Block&);
         static void uint128_t_to_bytes(const uint128_t& n, Block&);
+        Block tag() const;
 
     private:
 };
