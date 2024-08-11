@@ -5,9 +5,10 @@
 namespace crypto {
 
 // for testing
-bool operator==(const Block& left, const Block& right) {
+bool operator==(const Buffer& left, const Block& right) {
+    if (left.size() != right.size()) return false;
     for (uint8_t i = 0; i < left.size(); ++i) {
-        if (left[i] != right[i]) return false;
+        if (left.block()[i] != right[i]) return false;
     }
     return true;
 }
@@ -18,7 +19,7 @@ TEST_CASE("crypto::Buffer::pad_pkcs7") {
         REQUIRE(buf.size() == BLOCK_SIZE);
         const Block expected{'f', 'f', 14, 14, 14, 14, 14, 14,
                              14,  14,  14, 14, 14, 14, 14, 14};
-        REQUIRE(buf.block() == expected);
+        REQUIRE(buf == expected);
         REQUIRE(buf.size() == BLOCK_SIZE);
     }
 
@@ -32,16 +33,55 @@ TEST_CASE("crypto::Buffer::pad_pkcs7") {
 }
 
 TEST_CASE("crypto::Buffer::rm_pad_pkcs7") {
-    Block original{'f', 'f'};
-    Buffer buf{original, 2};
-    Block expected{
-        'f', 'f', 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    SECTION("removes padding properly") {
+        Block original{'f', 'f'};
+        Buffer buf{original, 2};
+        Block expected{
+            'f', 'f', 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+        };
+        REQUIRE(buf == expected);
+        buf.rm_pad_pkcs7();
+        REQUIRE(buf == original);
+        REQUIRE(buf.size() == 2);
+    }
+
+    SECTION("does not modify with invalid padding") {
+        {
+            Block original{
+                255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 12,  2,   0,   0,
+            };
+            Buffer buf{original, 14};
+            buf.pad_pkcs7();
+            buf.rm_pad_pkcs7();
+            REQUIRE(buf == original);
+        };
+
+        {
+            Block original{
+                255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 12,  2,   0,   0,
+            };
+            Buffer buf{original, 14};
+            buf.pad_pkcs7();
+            REQUIRE(buf != original);
+            buf.rm_pad_pkcs7();
+            REQUIRE(buf == original);
+        };
+
+        {
+            Block original{
+                255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 12,  1,   1,   0,
+            };
+            Buffer buf{original, 15};
+            buf.pad_pkcs7();
+            REQUIRE(buf != original);
+            buf.rm_pad_pkcs7();
+            REQUIRE(buf == original);
+        };
     };
-    REQUIRE(buf.block() == expected);
-    buf.rm_pad_pkcs7();
-    REQUIRE(buf.block() == original);
-    REQUIRE(buf.size() == 2);
-}
+};
 
 TEST_CASE("crypto::Buffer - xor") {
     const Buffer a{{11, 13, 10, 5, 9, 12, 13, 15, 8, 4, 9, 6, 3, 1, 3, 6},
@@ -52,13 +92,13 @@ TEST_CASE("crypto::Buffer - xor") {
 
     SECTION("operator^") {
         const Buffer result = a ^ b;
-        REQUIRE(result.block() == expected);
+        REQUIRE(result == expected);
     }
 
     SECTION("operator^=") {
         Buffer a_mut = a;
         a_mut ^= b;
-        REQUIRE(a_mut.block() == expected);
+        REQUIRE(a_mut == expected);
     }
 };
 

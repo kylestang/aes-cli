@@ -53,9 +53,6 @@ class ECB : CipherMode {
 };
 
 class CBC : CipherMode {
-    private:
-        Buffer diffusion_block_;
-
     public:
         CBC(AES& key, Buffer iv);
         Buffer encrypt(const Buffer& plaintext) noexcept override;

@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <vector>
 
 namespace crypto {
 
@@ -25,11 +26,11 @@ inline Block make_iv() {
 
 struct Buffer {
     private:
-        Block buf_;
-        std::size_t size_;
+        using Bytes = std::vector<uint8_t>;
+        Bytes buf_{BLOCK_SIZE};
 
     public:
-        Buffer();
+        Buffer() {};
         Buffer(Block block, std::size_t n);
         Buffer(const Buffer&) = default;
         ~Buffer() = default;
@@ -37,8 +38,11 @@ struct Buffer {
         Buffer& operator^=(const Buffer& other) noexcept;
         Buffer operator^(const Buffer& other) const noexcept;
 
-        Block& block() noexcept;
-        const Block& block() const noexcept;
+        Block block() const noexcept;
+
+        Bytes& bytes() noexcept;
+        const Bytes& bytes() const noexcept;
+
         std::size_t size() const noexcept;
 
         // PKCS7 padding for a 128 bit block `buf_`
