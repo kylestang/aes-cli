@@ -10,6 +10,9 @@ namespace crypto {
 inline constexpr const std::size_t BLOCK_SIZE = 16;
 using Block = std::array<uint8_t, BLOCK_SIZE>;
 
+Block& operator^=(Block& l, const Block& r); 
+Block operator^(const Block& l, const Block& r); 
+
 inline void fill_bytes_n(Block& buf, std::size_t n) {
     std::random_device dev;
     std::mt19937 rng{dev()};
