@@ -1,7 +1,9 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
+#include <optional>
 #include <random>
+#include <vector>
 
 namespace crypto::ciphermode {
 
@@ -64,20 +66,19 @@ void GCM::encrypt_general(Buffer& m) noexcept {
     key_encrypt_inplace(ctr_register);
     m ^= ctr_register;
     gcm_utils::inc_counter(diffusion_block_);
+    payload_len_ += m.size();
 };
 
 void GCM::encrypt_inplace(Buffer& plaintext) noexcept {
     encrypt_general(plaintext);
 
     // TODO: compute tag
-    payload_len_ += plaintext.size();
 }
 
 void GCM::decrypt_inplace(Buffer& ciphertext) noexcept {
     encrypt_general(ciphertext);
 
     // TODO: compute tag
-    payload_len_ += ciphertext.size();
 }
 
 Buffer GCM::encrypt_cp(const Buffer& block) noexcept {
@@ -85,6 +86,11 @@ Buffer GCM::encrypt_cp(const Buffer& block) noexcept {
     encrypt_inplace(buf);
     return buf;
 };
+
+std::vector<uint8_t> GCM::final_block() noexcept {
+    // TODO: implement this
+    return {};
+}
 
 namespace gcm_utils {
 
@@ -99,7 +105,7 @@ void inc_counter(Buffer& buffer) noexcept {
 Buffer make_gcm_iv() noexcept {
     Buffer iv{crypto::make_iv(), BLOCK_SIZE};
 
-    // counter bytes, zero values for the last 4 bytes 
+    // counter bytes, zero values for the last 4 bytes
     Block& block = iv.block();
     for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
         block[i] = 0;
@@ -148,11 +154,12 @@ void AuthTag::update_tag(const Block& ciphertext) {
 
         // if msb is set, xor with R to clamp
         const bool msb_set = (ciphertext_value & (uint128_t(1) << 127)) != 0;
+        ciphertext_value <<= 1;
+
         if (msb_set) {
             ciphertext_value ^= R;
         }
 
-        ciphertext_value <<= 1;
         bitmask <<= 1;
     }
 }

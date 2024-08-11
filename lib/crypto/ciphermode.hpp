@@ -1,6 +1,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/crypto.hpp>
 #include <crypto/key.hpp>
+#include <vector>
 
 namespace crypto::ciphermode {
 
@@ -29,6 +30,9 @@ class CipherMode {
 
         // decrypt the *padded* block in place
         virtual void decrypt_inplace(Buffer& ciphertext) noexcept = 0;
+
+        // final call to compute the authenticated tag.
+        virtual std::vector<uint8_t> final_block() noexcept { return {}; }
 
         // don't need these
         CipherMode() = delete;
@@ -109,6 +113,7 @@ class GCM : CipherMode {
         GCM(AES& key, Buffer iv);
         void encrypt_inplace(Buffer& plaintext) noexcept override;
         void decrypt_inplace(Buffer& ciphertext) noexcept override;
+        std::vector<uint8_t> final_block() noexcept override;
 
     private:
         // Since the encryption/decryption of payload is the
