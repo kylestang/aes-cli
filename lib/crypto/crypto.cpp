@@ -1,13 +1,14 @@
+#include <algorithm>
+#include <cassert>
 #include <crypto/crypto.hpp>
 
 namespace crypto {
 
-Buffer::Buffer() : buf_{Block{}}, size_{0} {
-    pad_pkcs7();
-}
-
-Buffer::Buffer(Block block, std::size_t n) : buf_{block}, size_{n} {
-    pad_pkcs7();
+Buffer::Buffer(Block block, std::size_t n) {
+    buf_ = Buffer::Bytes(n);
+    buf_.reserve(BLOCK_SIZE);
+    std::copy(block.begin(), block.end(), buf_.begin());
+    assert(buf_.size() == n);
 }
 
 Buffer& Buffer::operator^=(const Buffer& other) noexcept {
@@ -23,24 +24,34 @@ Buffer Buffer::operator^(const Buffer& other) const noexcept {
     return tmp;
 }
 
-Block& Buffer::block() noexcept { return buf_; }
-const Block& Buffer::block() const noexcept { return buf_; }
+Block Buffer::block() const noexcept {
+    Block b{};
+    std::copy(buf_.begin(), buf_.end(), b.begin());
+    return b;
+}
 
-std::size_t Buffer::size() const noexcept { return size_; }
+Buffer::Bytes& Buffer::bytes() noexcept { return buf_; }
+const Buffer::Bytes& Buffer::bytes() const noexcept { return buf_; }
+
+std::size_t Buffer::size() const noexcept { return buf_.size(); }
 
 void Buffer::pad_pkcs7() noexcept {
-    const uint8_t pad_size = BLOCK_SIZE - size_;
+    const uint8_t pad_size = BLOCK_SIZE - size();
     for (std::size_t i = 0; i < pad_size; ++i) {
         buf_[BLOCK_SIZE - 1 - i] = pad_size;
     }
-    size_ = BLOCK_SIZE;
 }
 
 void Buffer::rm_pad_pkcs7() noexcept {
-    const uint8_t pad_size = buf_[size_ - 1];
+    const uint8_t pad_size = buf_[size() - 1];
 
     if (pad_size > BLOCK_SIZE) return;  // no padding
-    size_ = BLOCK_SIZE - pad_size;
+
+    // valid padding?
+    for (uint8_t i = 0; i < pad_size; ++i) {
+        if (buf_[BLOCK_SIZE - 1 - i] != pad_size) return;
+    }
+
     for (uint8_t i = 0; i < pad_size; ++i) {
         buf_[BLOCK_SIZE - 1 - i] = 0;
     }
