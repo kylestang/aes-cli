@@ -1,7 +1,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
-#include <vector>
 
 namespace crypto::ciphermode {
 
@@ -37,12 +36,12 @@ Buffer ECB::decrypt(const Buffer& ciphertext) noexcept {
 // CBC
 CBC::CBC(AES& key, Buffer iv) : CipherMode{key, iv} {}
 
-Buffer CBC::encrypt(const Buffer& ciphertext) noexcept {
-    Buffer plaintext{ciphertext};
-    plaintext ^= diffusion_block_;
-    key_encrypt_inplace(plaintext);
-    diffusion_block_ = plaintext;  // plaintext is now the ciphertext
-    return plaintext;
+Buffer CBC::encrypt(const Buffer& plaintext) noexcept {
+    Buffer ciphertext{plaintext};
+    ciphertext ^= diffusion_block_;
+    key_encrypt_inplace(ciphertext);
+    diffusion_block_ = ciphertext;
+    return ciphertext;
 }
 
 Buffer CBC::decrypt(const Buffer& ciphertext) noexcept {
@@ -53,17 +52,28 @@ Buffer CBC::decrypt(const Buffer& ciphertext) noexcept {
     return plaintext;
 }
 
-// GCM
-GCM::GCM(AES& key, Buffer iv)
-    : CipherMode{key, iv}, tag_{encrypt_cp(Buffer{}), encrypt_cp(iv)} {
+// GCM:
+//
+// This implementation:
+//
+// 1. Does not support the additional authenticated data (`aad`),
+//    so it is defaults to an empty vector.
+//
+// 2. The `IV` has 12 random bytes, and the last 4 bytes should
+//    be initialized to zeros, these are the counter bytes.
+GCM::GCM(AES& key, Buffer iv, Buffer aad)
+    : CipherMode{key, iv},
+      tag_{encrypt_cp(Buffer{}), encrypt_cp(iv)},
+      aad_len_{aad.size()} {
     // valid iv/counter buf, where the first 12 bytes are random,
     // but the rest are 0's
     for (uint8_t i = 12; i < diffusion_block_.size(); ++i) {
-        assert(diffusion_block_.block()[i] == 0);
+        assert(diffusion_block_.at(i) == 0);
     }
 
     // the actual message starts with counter value 1
     gcm_utils::inc_counter(diffusion_block_);
+    tag_.update_tag(aad.block());
 }
 
 void GCM::encrypt_general(Buffer& m) noexcept {
@@ -94,9 +104,20 @@ Buffer GCM::encrypt_cp(const Buffer& block) noexcept {
     return buf;
 };
 
-std::vector<uint8_t> GCM::final_block(Buffer& last_ciphertext) noexcept {
-    // TODO: implement this
-    return {};
+Buffer GCM::tag() noexcept {
+    using gcm_utils::AuthTag;
+
+    uint128_t len_a_c{(uint128_t(aad_len_) << 64) | payload_len_};
+
+    len_a_c ^= tag_.value();
+
+    uint128_t tag = AuthTag::galois_multiply(len_a_c, tag_.H());
+    tag ^= tag_.counter0();
+
+    Block tag_block{};
+    AuthTag::uint128_t_to_bytes(tag, tag_block);
+
+    return {tag_block, BLOCK_SIZE};
 }
 
 namespace gcm_utils {
@@ -132,6 +153,8 @@ uint128_t AuthTag::bytes_to_uint128_t(const Block& bytes) {
     return result;
 };
 
+const uint128_t& AuthTag::H() const noexcept { return H_; };
+
 void AuthTag::uint128_t_to_bytes(const uint128_t& n, Block& bytes) {
     const uint8_t M = bytes.size();
     uint128_t bitmask = 0xff;
@@ -141,40 +164,41 @@ void AuthTag::uint128_t_to_bytes(const uint128_t& n, Block& bytes) {
 };
 
 void AuthTag::update_tag(const Block& ciphertext) {
-    // `uint128_t` representation of reduction polynomial:
-    // x^127 + x^7 + x^2 + x^1 + 1
-    //
-    // Since we're doing binary arithmetic in the Galois
-    // field with 127 bits, instead of 128, so the last 1
-    // is dropped, (thus the hex ends in digit 0.)
-    //
-    // It is to keep the binary within 127 bits. Math!
-    constexpr static uint128_t R = uint128_t(0xE100000000000000) << 64;
+    const uint128_t X = AuthTag::bytes_to_uint128_t(ciphertext) ^ tag_;
+    tag_ = galois_multiply(X, H_);
+}
 
-    uint128_t ciphertext_value = AuthTag::bytes_to_uint128_t(ciphertext);
+uint128_t AuthTag::galois_multiply(const uint128_t& X, const uint128_t& H) {
+    // Refer to section 2.5 Multiplication in GF(2^128)
+    // https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
+    constexpr static uint128_t R = uint128_t(0b11100001) << 120;
+
+    uint128_t Z = 0;
+    uint128_t V = X;
 
     uint128_t bitmask = 1;
     for (uint8_t i = 0; i < 128; ++i) {
-        if (H_ & bitmask) {
-            tag_ ^= ciphertext_value;
+        if (H & bitmask) {
+            Z ^= V;
         }
 
-        // if msb is set, xor with R to clamp
-        const bool msb_set = (ciphertext_value & (uint128_t(1) << 127)) != 0;
-        ciphertext_value <<= 1;
-
-        if (msb_set) {
-            ciphertext_value ^= R;
+        const bool lsb_set = (V & 1) != 0;
+        V >>= 1;
+        if (lsb_set) {
+            V ^= R;
         }
 
         bitmask <<= 1;
     }
+
+    return Z;
 }
 
-Block AuthTag::tag() const {
-    Block block{};
-    AuthTag::uint128_t_to_bytes(tag_, block);
-    return block;
+uint128_t AuthTag::value() const noexcept { return tag_; }
+
+uint128_t AuthTag::counter0() const noexcept {
+    Block ctr = counter_0_.block();
+    return AuthTag::bytes_to_uint128_t(ctr);
 }
 
 }  // namespace gcm_utils

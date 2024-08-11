@@ -1,7 +1,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/crypto.hpp>
 #include <crypto/key.hpp>
-#include <vector>
 
 namespace crypto::ciphermode {
 
@@ -32,10 +31,7 @@ class CipherMode {
         virtual Buffer decrypt(const Buffer& ciphertext) noexcept = 0;
 
         // final call to compute the authenticated tag.
-        virtual std::vector<uint8_t> final_block(
-            Buffer& last_ciphertext) noexcept {
-            return {};
-        }
+        virtual Buffer tag() noexcept { return {}; }
 
         // don't need these
         CipherMode() = delete;
@@ -89,15 +85,16 @@ class AuthTag {
             : H_{AuthTag::bytes_to_uint128_t(H.block())},
               counter_0_{counter_0} {};
 
-        // Reference: Section 3: The Field `GF(2^128)`
-        //
-        // https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
+        const uint128_t& H() const noexcept;
+
         void update_tag(const Block& ciphertext);
+    uint128_t counter0() const noexcept;
 
         // convert 16 byte array in to a 128 bit unsigned integer
         static uint128_t bytes_to_uint128_t(const Block&);
         static void uint128_t_to_bytes(const uint128_t& n, Block&);
-        Block tag() const;
+        uint128_t value() const noexcept;
+        static uint128_t galois_multiply(const uint128_t&, const uint128_t&);
 
     private:
 };
@@ -107,13 +104,14 @@ class AuthTag {
 class GCM : CipherMode {
     private:
         gcm_utils::AuthTag tag_;
-        std::size_t payload_len_{0};
+        uint64_t payload_len_{0};
+        const uint64_t aad_len_;
 
     public:
-        GCM(AES& key, Buffer iv);
+        GCM(AES& key, Buffer iv, Buffer aad = {});
         Buffer encrypt(const Buffer& plaintext) noexcept override;
         Buffer decrypt(const Buffer& ciphertext) noexcept override;
-        std::vector<uint8_t> final_block(Buffer& block) noexcept override;
+        Buffer tag() noexcept override;
 
     private:
         // Since the encryption/decryption of payload is the
