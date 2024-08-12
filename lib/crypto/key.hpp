@@ -38,7 +38,7 @@ class AesKey {
             k_256 = 256,
         };
 
-        AesKey(const std::vector<uint8_t> input_key) {
+        AesKey(const std::vector<uint8_t>&& input_key) {
             switch (input_key.size()) {
                 case 16:
                     this->key = input_key;
