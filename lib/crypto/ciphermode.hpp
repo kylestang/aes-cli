@@ -37,14 +37,14 @@ class CipherMode {
         CipherMode& operator=(CipherMode&&) = delete;
 };
 
-class ECB : CipherMode {
+class ECB : public CipherMode {
     public:
         ECB(AES&);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
 };
 
-class CBC : CipherMode {
+class CBC : public CipherMode {
     public:
         CBC(AES& key, Buffer iv);
         void encrypt(Buffer& buf) noexcept override;
@@ -91,7 +91,7 @@ class AuthTag {
 
 }  // namespace gcm_utils
 
-class GCM : CipherMode {
+class GCM : public CipherMode {
     private:
         gcm_utils::AuthTag tag_;
         uint64_t payload_len_{0};

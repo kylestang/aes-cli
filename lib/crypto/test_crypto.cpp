@@ -85,9 +85,9 @@ TEST_CASE("crypto::Buffer - xor") {
 
 TEST_CASE("crypto::fill_bytes_n") {
     Buffer iv1{};
-    iv1.resize(IV_SIZE);
+    iv1.resize(BLOCK_SIZE);
     Buffer iv2{};
-    iv2.resize(IV_SIZE);
+    iv2.resize(BLOCK_SIZE);
 
     fill_bytes_n(iv1, IV_SIZE);
     fill_bytes_n(iv2, IV_SIZE);
