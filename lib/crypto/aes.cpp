@@ -30,117 +30,121 @@ Block inv_sub_bytes(const Block matrix) {
 }
 
 Block shift_rows(const Block matrix) {
-    return Block{matrix[0],  matrix[1],  matrix[2],  matrix[3],
-                 matrix[5],  matrix[6],  matrix[7],  matrix[4],
-                 matrix[10], matrix[11], matrix[8],  matrix[9],
-                 matrix[15], matrix[12], matrix[13], matrix[14]};
+    return Block{matrix[0],  matrix[5],  matrix[10], matrix[15],
+                 matrix[4],  matrix[9],  matrix[14], matrix[3],
+                 matrix[8],  matrix[13], matrix[2],  matrix[7],
+                 matrix[12], matrix[1],  matrix[6],  matrix[11]};
 }
 
 Block inv_shift_rows(const Block matrix) {
-    return Block{matrix[0],  matrix[1],  matrix[2],  matrix[3],
-                 matrix[7],  matrix[4],  matrix[5],  matrix[6],
-                 matrix[10], matrix[11], matrix[8],  matrix[9],
-                 matrix[13], matrix[14], matrix[15], matrix[12]};
+    return Block{matrix[0],  matrix[13], matrix[10], matrix[7],
+                 matrix[4],  matrix[1],  matrix[14], matrix[11],
+                 matrix[8],  matrix[5],  matrix[2],  matrix[15],
+                 matrix[12], matrix[9],  matrix[6],  matrix[3]};
 }
 
 Block mix_columns(const Block matrix) {
     return Block{
-        // Row 0
+        // Column 0
         static_cast<uint8_t>(multiply_by_2[matrix[0]] ^
-                             multiply_by_3[matrix[4]] ^ matrix[8] ^ matrix[12]),
-        static_cast<uint8_t>(multiply_by_2[matrix[1]] ^
-                             multiply_by_3[matrix[5]] ^ matrix[9] ^ matrix[13]),
-        static_cast<uint8_t>(multiply_by_2[matrix[2]] ^
-                             multiply_by_3[matrix[6]] ^ matrix[10] ^
-                             matrix[14]),
-        static_cast<uint8_t>(multiply_by_2[matrix[3]] ^
-                             multiply_by_3[matrix[7]] ^ matrix[11] ^
+                             multiply_by_3[matrix[1]] ^ matrix[2] ^ matrix[3]),
+        static_cast<uint8_t>(matrix[0] ^ multiply_by_2[matrix[1]] ^
+                             multiply_by_3[matrix[2]] ^ matrix[3]),
+        static_cast<uint8_t>(matrix[0] ^ matrix[1] ^ multiply_by_2[matrix[2]] ^
+                             multiply_by_3[matrix[3]]),
+        static_cast<uint8_t>(multiply_by_3[matrix[0]] ^ matrix[1] ^ matrix[2] ^
+                             multiply_by_2[matrix[3]]),
+
+        // Column 1
+        static_cast<uint8_t>(multiply_by_2[matrix[4]] ^
+                             multiply_by_3[matrix[5]] ^ matrix[6] ^ matrix[7]),
+        static_cast<uint8_t>(matrix[4] ^ multiply_by_2[matrix[5]] ^
+                             multiply_by_3[matrix[6]] ^ matrix[7]),
+        static_cast<uint8_t>(matrix[4] ^ matrix[5] ^ multiply_by_2[matrix[6]] ^
+                             multiply_by_3[matrix[7]]),
+        static_cast<uint8_t>(multiply_by_3[matrix[4]] ^ matrix[5] ^ matrix[6] ^
+                             multiply_by_2[matrix[7]]),
+
+        // Column 2
+        static_cast<uint8_t>(multiply_by_2[matrix[8]] ^
+                             multiply_by_3[matrix[9]] ^ matrix[10] ^
+                             matrix[11]),
+        static_cast<uint8_t>(matrix[8] ^ multiply_by_2[matrix[9]] ^
+                             multiply_by_3[matrix[10]] ^ matrix[11]),
+        static_cast<uint8_t>(matrix[8] ^ matrix[9] ^ multiply_by_2[matrix[10]] ^
+                             multiply_by_3[matrix[11]]),
+        static_cast<uint8_t>(multiply_by_3[matrix[8]] ^ matrix[9] ^ matrix[10] ^
+                             multiply_by_2[matrix[11]]),
+
+        // Column 3
+        static_cast<uint8_t>(multiply_by_2[matrix[12]] ^
+                             multiply_by_3[matrix[13]] ^ matrix[14] ^
                              matrix[15]),
-        // Row 1
-        static_cast<uint8_t>(matrix[0] ^ multiply_by_2[matrix[4]] ^
-                             multiply_by_3[matrix[8]] ^ matrix[12]),
-        static_cast<uint8_t>(matrix[1] ^ multiply_by_2[matrix[5]] ^
-                             multiply_by_3[matrix[9]] ^ matrix[13]),
-        static_cast<uint8_t>(matrix[2] ^ multiply_by_2[matrix[6]] ^
-                             multiply_by_3[matrix[10]] ^ matrix[14]),
-        static_cast<uint8_t>(matrix[3] ^ multiply_by_2[matrix[7]] ^
-                             multiply_by_3[matrix[11]] ^ matrix[15]),
-        // Row 2
-        static_cast<uint8_t>(matrix[0] ^ matrix[4] ^ multiply_by_2[matrix[8]] ^
-                             multiply_by_3[matrix[12]]),
-        static_cast<uint8_t>(matrix[1] ^ matrix[5] ^ multiply_by_2[matrix[9]] ^
-                             multiply_by_3[matrix[13]]),
-        static_cast<uint8_t>(matrix[2] ^ matrix[6] ^ multiply_by_2[matrix[10]] ^
-                             multiply_by_3[matrix[14]]),
-        static_cast<uint8_t>(matrix[3] ^ matrix[7] ^ multiply_by_2[matrix[11]] ^
+        static_cast<uint8_t>(matrix[12] ^ multiply_by_2[matrix[13]] ^
+                             multiply_by_3[matrix[14]] ^ matrix[15]),
+        static_cast<uint8_t>(matrix[12] ^ matrix[13] ^
+                             multiply_by_2[matrix[14]] ^
                              multiply_by_3[matrix[15]]),
-        // Row 3
-        static_cast<uint8_t>(multiply_by_3[matrix[0]] ^ matrix[4] ^ matrix[8] ^
-                             multiply_by_2[matrix[12]]),
-        static_cast<uint8_t>(multiply_by_3[matrix[1]] ^ matrix[5] ^ matrix[9] ^
-                             multiply_by_2[matrix[13]]),
-        static_cast<uint8_t>(multiply_by_3[matrix[2]] ^ matrix[6] ^ matrix[10] ^
-                             multiply_by_2[matrix[14]]),
-        static_cast<uint8_t>(multiply_by_3[matrix[3]] ^ matrix[7] ^ matrix[11] ^
-                             multiply_by_2[matrix[15]])};
+        static_cast<uint8_t>(multiply_by_3[matrix[12]] ^ matrix[13] ^
+                             matrix[14] ^ multiply_by_2[matrix[15]])};
 }
 
 Block inv_mix_columns(const Block matrix) {
-    return Block{// Row 0
+    return Block{// Column 0
                  static_cast<uint8_t>(
-                     multiply_by_14[matrix[0]] ^ multiply_by_11[matrix[4]] ^
-                     multiply_by_13[matrix[8]] ^ multiply_by_9[matrix[12]]),
+                     multiply_by_14[matrix[0]] ^ multiply_by_11[matrix[1]] ^
+                     multiply_by_13[matrix[2]] ^ multiply_by_9[matrix[3]]),
                  static_cast<uint8_t>(
-                     multiply_by_9[matrix[1]] ^ multiply_by_14[matrix[5]] ^
-                     multiply_by_11[matrix[9]] ^ multiply_by_13[matrix[13]]),
+                     multiply_by_9[matrix[0]] ^ multiply_by_14[matrix[1]] ^
+                     multiply_by_11[matrix[2]] ^ multiply_by_13[matrix[3]]),
                  static_cast<uint8_t>(
-                     multiply_by_14[matrix[2]] ^ multiply_by_11[matrix[6]] ^
-                     multiply_by_13[matrix[10]] ^ multiply_by_9[matrix[14]]),
+                     multiply_by_13[matrix[0]] ^ multiply_by_9[matrix[1]] ^
+                     multiply_by_14[matrix[2]] ^ multiply_by_11[matrix[3]]),
                  static_cast<uint8_t>(
-                     multiply_by_9[matrix[3]] ^ multiply_by_14[matrix[7]] ^
-                     multiply_by_11[matrix[11]] ^ multiply_by_13[matrix[15]]),
+                     multiply_by_11[matrix[0]] ^ multiply_by_13[matrix[1]] ^
+                     multiply_by_9[matrix[2]] ^ multiply_by_14[matrix[3]]),
 
-                 // Row 1
+                 // Column 1
                  static_cast<uint8_t>(
-                     multiply_by_9[matrix[0]] ^ multiply_by_14[matrix[4]] ^
-                     multiply_by_11[matrix[8]] ^ multiply_by_13[matrix[12]]),
+                     multiply_by_14[matrix[4]] ^ multiply_by_11[matrix[5]] ^
+                     multiply_by_13[matrix[6]] ^ multiply_by_9[matrix[7]]),
                  static_cast<uint8_t>(
-                     multiply_by_9[matrix[1]] ^ multiply_by_14[matrix[5]] ^
-                     multiply_by_11[matrix[9]] ^ multiply_by_13[matrix[13]]),
+                     multiply_by_9[matrix[4]] ^ multiply_by_14[matrix[5]] ^
+                     multiply_by_11[matrix[6]] ^ multiply_by_13[matrix[7]]),
                  static_cast<uint8_t>(
-                     multiply_by_9[matrix[2]] ^ multiply_by_14[matrix[6]] ^
-                     multiply_by_11[matrix[10]] ^ multiply_by_13[matrix[14]]),
+                     multiply_by_13[matrix[4]] ^ multiply_by_9[matrix[5]] ^
+                     multiply_by_14[matrix[6]] ^ multiply_by_11[matrix[7]]),
                  static_cast<uint8_t>(
-                     multiply_by_9[matrix[3]] ^ multiply_by_14[matrix[7]] ^
-                     multiply_by_11[matrix[11]] ^ multiply_by_13[matrix[15]]),
+                     multiply_by_11[matrix[4]] ^ multiply_by_13[matrix[5]] ^
+                     multiply_by_9[matrix[6]] ^ multiply_by_14[matrix[7]]),
 
-                 // Row 2
+                 // Column 2
                  static_cast<uint8_t>(
-                     multiply_by_13[matrix[0]] ^ multiply_by_9[matrix[4]] ^
-                     multiply_by_14[matrix[8]] ^ multiply_by_11[matrix[12]]),
+                     multiply_by_14[matrix[8]] ^ multiply_by_11[matrix[9]] ^
+                     multiply_by_13[matrix[10]] ^ multiply_by_9[matrix[11]]),
                  static_cast<uint8_t>(
-                     multiply_by_13[matrix[1]] ^ multiply_by_9[matrix[5]] ^
-                     multiply_by_14[matrix[9]] ^ multiply_by_11[matrix[13]]),
+                     multiply_by_9[matrix[8]] ^ multiply_by_14[matrix[9]] ^
+                     multiply_by_11[matrix[10]] ^ multiply_by_13[matrix[11]]),
                  static_cast<uint8_t>(
-                     multiply_by_13[matrix[2]] ^ multiply_by_9[matrix[6]] ^
-                     multiply_by_14[matrix[10]] ^ multiply_by_11[matrix[14]]),
+                     multiply_by_13[matrix[8]] ^ multiply_by_9[matrix[9]] ^
+                     multiply_by_14[matrix[10]] ^ multiply_by_11[matrix[11]]),
                  static_cast<uint8_t>(
-                     multiply_by_13[matrix[3]] ^ multiply_by_9[matrix[7]] ^
-                     multiply_by_14[matrix[11]] ^ multiply_by_11[matrix[15]]),
+                     multiply_by_11[matrix[8]] ^ multiply_by_13[matrix[9]] ^
+                     multiply_by_9[matrix[10]] ^ multiply_by_14[matrix[11]]),
 
-                 // Row 3
+                 // Column 2
                  static_cast<uint8_t>(
-                     multiply_by_11[matrix[0]] ^ multiply_by_13[matrix[4]] ^
-                     multiply_by_9[matrix[8]] ^ multiply_by_14[matrix[12]]),
+                     multiply_by_14[matrix[12]] ^ multiply_by_11[matrix[13]] ^
+                     multiply_by_13[matrix[14]] ^ multiply_by_9[matrix[15]]),
                  static_cast<uint8_t>(
-                     multiply_by_11[matrix[1]] ^ multiply_by_13[matrix[5]] ^
-                     multiply_by_9[matrix[9]] ^ multiply_by_14[matrix[13]]),
+                     multiply_by_9[matrix[12]] ^ multiply_by_14[matrix[13]] ^
+                     multiply_by_11[matrix[14]] ^ multiply_by_13[matrix[15]]),
                  static_cast<uint8_t>(
-                     multiply_by_11[matrix[2]] ^ multiply_by_13[matrix[6]] ^
-                     multiply_by_9[matrix[10]] ^ multiply_by_14[matrix[14]]),
+                     multiply_by_13[matrix[12]] ^ multiply_by_9[matrix[13]] ^
+                     multiply_by_14[matrix[14]] ^ multiply_by_11[matrix[15]]),
                  static_cast<uint8_t>(
-                     multiply_by_11[matrix[3]] ^ multiply_by_13[matrix[7]] ^
-                     multiply_by_9[matrix[11]] ^ multiply_by_14[matrix[15]])};
+                     multiply_by_11[matrix[12]] ^ multiply_by_13[matrix[13]] ^
+                     multiply_by_9[matrix[14]] ^ multiply_by_14[matrix[15]])};
 }
 
 Block add_round_key(Block block, AesKey aes_key, size_t round) {
@@ -178,7 +182,7 @@ Block encrypt(Block block, AesKey key) {
 
     // Rounds
     for (size_t round = 1; round < key.get_rounds(); round++) {
-        std::cout << "\nInput to round " << round << ": ";
+        std::cout << "\nEncrypt input to round " << round << ": ";
         print_block(block);
 
         block = sub_bytes(block);
@@ -190,6 +194,9 @@ Block encrypt(Block block, AesKey key) {
         print_block(block);
 
         block = mix_columns(block);
+        std::cout << "Mix result: ";
+        print_block(block);
+
         block = add_round_key(block, key, round);
     }
 
@@ -207,10 +214,22 @@ Block decrypt(Block block, AesKey key) {
 
     // Rounds
     for (size_t round = key.get_rounds() - 1; round > 0; round--) {
+        std::cout << "\nDecrypt input to round " << round << ": ";
+        print_block(block);
+
         block = inv_shift_rows(block);
+        std::cout << "Shift result: ";
+        print_block(block);
+
         block = inv_sub_bytes(block);
+        std::cout << "Sub result: ";
+        print_block(block);
+
         block = add_round_key(block, key, round);
+
         block = inv_mix_columns(block);
+        std::cout << "Mix result: ";
+        print_block(block);
     }
 
     // Final round
