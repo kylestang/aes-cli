@@ -16,20 +16,23 @@ class CipherMode {
     protected:
         AesKey& key_;
         Buffer diffusion_block_;
+        std::istream& input_fd_;
+        std::ostream& output_fd_;
 
         // Kyle: go to ciphermode.cpp and implement these
-        void key_encrypt_inplace(Buffer& buf) noexcept;
-        void key_decrypt_inplace(Buffer& buf) noexcept;
+        virtual void key_encrypt_inplace(Buffer& buf) noexcept;
+        virtual void key_decrypt_inplace(Buffer& buf) noexcept;
 
     public:
-        CipherMode(AES& key, Buffer iv);
+        CipherMode(AES& key, std::istream& in, std::ostream& out);
         ~CipherMode() = default;
 
         virtual void encrypt(Buffer&) noexcept = 0;
         virtual void decrypt(Buffer&) noexcept = 0;
 
-        virtual void encrypt_fd(std::istream&) noexcept = 0;
-        virtual void decrypt_fd(std::istream&) noexcept = 0;
+        void encrypt_fd() noexcept;
+        void decrypt_fd() noexcept;
+
         // final call to compute the authenticated tag.
         virtual Buffer tag() noexcept { return {}; }
 
@@ -46,9 +49,6 @@ class ECB : public CipherMode {
         ECB(AES&);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
-
-        virtual void encrypt_fd(std::istream&) noexcept override;
-        virtual void decrypt_fd(std::istream&) noexcept override;
 };
 
 class CBC : public CipherMode {
@@ -56,9 +56,6 @@ class CBC : public CipherMode {
         CBC(AES& key, Buffer iv);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
-
-        virtual void encrypt_fd(std::istream&) noexcept override;
-        virtual void decrypt_fd(std::istream&) noexcept override;
 };
 
 // GCM
@@ -112,9 +109,6 @@ class GCM : public CipherMode {
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
         Buffer tag() noexcept override;
-
-        virtual void encrypt_fd(std::istream&) noexcept override;
-        virtual void decrypt_fd(std::istream&) noexcept override;
 
     private:
         // Since the encryption/decryption of payload is the
