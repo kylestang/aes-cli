@@ -17,19 +17,15 @@ class CipherMode {
         Buffer diffusion_block_;
 
         // Kyle: go to ciphermode.cpp and implement these
-        void key_encrypt_inplace(Buffer& block) noexcept;
-        void key_decrypt_inplace(Buffer& block) noexcept;
+        void key_encrypt_inplace(Buffer& buf) noexcept;
+        void key_decrypt_inplace(Buffer& buf) noexcept;
 
     public:
         CipherMode(AES& key, Buffer iv);
         ~CipherMode() = default;
 
-        // encrypt the *padded* block in place
-        virtual Buffer encrypt(const Buffer& plaintext) noexcept = 0;
-
-        // decrypt the *padded* block in place
-        virtual Buffer decrypt(const Buffer& ciphertext) noexcept = 0;
-
+        virtual void encrypt(Buffer&) noexcept = 0;
+        virtual void decrypt(Buffer&) noexcept = 0;
         // final call to compute the authenticated tag.
         virtual Buffer tag() noexcept { return {}; }
 
@@ -44,15 +40,15 @@ class CipherMode {
 class ECB : CipherMode {
     public:
         ECB(AES&);
-        Buffer encrypt(const Buffer& plaintext) noexcept override;
-        Buffer decrypt(const Buffer& ciphertext) noexcept override;
+        void encrypt(Buffer& buf) noexcept override;
+        void decrypt(Buffer& buf) noexcept override;
 };
 
 class CBC : CipherMode {
     public:
         CBC(AES& key, Buffer iv);
-        Buffer encrypt(const Buffer& plaintext) noexcept override;
-        Buffer decrypt(const Buffer& ciphertext) noexcept override;
+        void encrypt(Buffer& buf) noexcept override;
+        void decrypt(Buffer& buf) noexcept override;
 };
 
 // GCM
@@ -88,15 +84,13 @@ class AuthTag {
         const uint128_t& H() const noexcept;
 
         void update_tag(const Block& ciphertext);
-    uint128_t counter0() const noexcept;
+        uint128_t counter0() const noexcept;
 
         // convert 16 byte array in to a 128 bit unsigned integer
         static uint128_t bytes_to_uint128_t(const Block&);
         static void uint128_t_to_bytes(const uint128_t& n, Block&);
         uint128_t value() const noexcept;
         static uint128_t galois_multiply(const uint128_t&, const uint128_t&);
-
-    private:
 };
 
 }  // namespace gcm_utils
@@ -109,8 +103,8 @@ class GCM : CipherMode {
 
     public:
         GCM(AES& key, Buffer iv, Buffer aad = {});
-        Buffer encrypt(const Buffer& plaintext) noexcept override;
-        Buffer decrypt(const Buffer& ciphertext) noexcept override;
+        void encrypt(Buffer& buf) noexcept override;
+        void decrypt(Buffer& buf) noexcept override;
         Buffer tag() noexcept override;
 
     private:
