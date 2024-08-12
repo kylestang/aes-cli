@@ -5,36 +5,15 @@
 #include <cstdint>
 #include <random>
 #include <stdexcept>
-#include <vector>
 
 namespace crypto {
 
 // Cipher block, 128 bits (16 bytes)
 inline constexpr const std::size_t BLOCK_SIZE = 16;
-using Block = std::array<char, BLOCK_SIZE>;
+using Block = std::array<unsigned char, BLOCK_SIZE>;
 
 Block& operator^=(Block& l, const Block& r);
 Block operator^(const Block& l, const Block& r);
-
-struct Buffer : public std::vector<uint8_t> {
-    public:
-        using Bytes = std::vector<uint8_t>;
-
-    public:
-        Buffer() : std::vector<uint8_t>(BLOCK_SIZE){};
-        Buffer(std::size_t n) : std::vector<uint8_t>(n){};
-        Buffer(Block block, std::size_t n);
-        Buffer(const Buffer&) = default;
-        ~Buffer() = default;
-
-        Buffer& operator^=(const Buffer& other) noexcept;
-        Buffer operator^(const Buffer& other) const noexcept;
-
-        Block block() const noexcept;
-
-        Bytes& bytes() noexcept;
-        const Bytes& bytes() const noexcept;
-};
 
 inline void pad_pkcs7(Block& buf, std::size_t n) {
     const uint8_t pad_size = BLOCK_SIZE - n;
@@ -61,7 +40,7 @@ inline std::size_t rm_pad_pkcs7(Block& block) {
 }
 
 // fill upto `n` bytes, where `n <= BLOCK_SIZE`
-inline void fill_bytes_n(Buffer& buf, uint8_t n) {
+inline void fill_bytes_n(Block& buf, uint8_t n) {
     if (n > BLOCK_SIZE) {
         throw std::logic_error{"byte count `n` exceeds `buf` size."};
     }

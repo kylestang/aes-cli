@@ -22,22 +22,16 @@ int run(int arg, char* argv[]) {
     if (mode == io::ModeOfOperation::GCM) {
         if (io.cmd() == io::Command::Encrypt) {
             // make iv
-            crypto::Buffer iv{gcm_utils::IV_SIZE};
+            crypto::Block iv{};
             crypto::fill_bytes_n(iv, gcm_utils::IV_SIZE);
-            io::Writer::write_bytes(output_fd, iv);
-
-            iv.resize(crypto::BLOCK_SIZE);
+            io::Writer::write_block(output_fd, iv, gcm_utils::IV_SIZE);
             crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
             cipher.encrypt_fd();
 
         } else {
-            std::array<uint8_t, gcm_utils::IV_SIZE> block;
-            // const std::size_t bytes_read =
-            input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
-
-            crypto::Buffer iv{};
-            iv.resize(crypto::BLOCK_SIZE);
-            std::copy(block.begin(), block.end(), iv.begin());
+            crypto::Block iv;
+            const std::size_t bytes_read =
+                input_fd.readsome((char*)iv.data(), gcm_utils::IV_SIZE);
 
             crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
             cipher.decrypt_fd();
@@ -46,28 +40,22 @@ int run(int arg, char* argv[]) {
     } else if (mode == io::ModeOfOperation::CBC) {
         if (io.cmd() == io::Command::Encrypt) {
             // make iv
-            crypto::Buffer iv{};
+            crypto::Block iv{};
             crypto::fill_bytes_n(iv, crypto::BLOCK_SIZE);
-            io::Writer::write_bytes(output_fd, iv);
-
+            io::Writer::write_block(output_fd, iv, crypto::BLOCK_SIZE);
             crypto::ciphermode::CBC cipher{key, input_fd, output_fd, iv};
             cipher.encrypt_fd();
         } else {
-            std::array<uint8_t, crypto::BLOCK_SIZE> block;
-            //            const std::size_t bytes_read =
-            input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
-
-            crypto::Buffer iv{};
-            iv.resize(crypto::BLOCK_SIZE);
-            std::copy(block.begin(), block.end(), iv.begin());
+            crypto::Block iv;
+            const std::size_t bytes_read =
+                input_fd.readsome((char*)iv.data(), crypto::BLOCK_SIZE);
 
             crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
             cipher.decrypt_fd();
         }
 
     } else {  // ModeOfOperation::ECB
-        std::cout << "ecb\n";
-        crypto::Buffer iv{};
+        crypto::Block iv{};
         crypto::ciphermode::ECB gcm{key, input_fd, output_fd, iv};
         if (io.cmd() == io::Command::Encrypt) {
             gcm.encrypt_fd();

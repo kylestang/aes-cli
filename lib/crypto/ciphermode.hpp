@@ -16,13 +16,13 @@ class CipherMode {
         AesKey& key_;
         std::istream& input_fd_;
         std::ostream& output_fd_;
-        Buffer diffusion_block_;
+        Block diffusion_block_;
 
         virtual void key_encrypt_inplace(Block& buf) noexcept;
         virtual void key_decrypt_inplace(Block& buf) noexcept;
 
     public:
-        CipherMode(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
+        CipherMode(AES& key, std::istream& in, std::ostream& out, Block& iv);
         ~CipherMode() = default;
 
         virtual void encrypt(Block&) noexcept = 0;
@@ -44,14 +44,14 @@ class CipherMode {
 
 class ECB : public CipherMode {
     public:
-        ECB(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
+        ECB(AES& key, std::istream& in, std::ostream& out, Block& iv);
         void encrypt(Block& buf) noexcept override;
         void decrypt(Block& buf) noexcept override;
 };
 
 class CBC : public CipherMode {
     public:
-        CBC(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
+        CBC(AES& key, std::istream& in, std::ostream& out, Block& iv);
         void encrypt(Block& buf) noexcept override;
         void decrypt(Block& buf) noexcept override;
 };
@@ -63,7 +63,7 @@ constexpr std::size_t IV_SIZE = 12;
 
 // increment the counter bytes (last 4 bytes)
 // of `block`
-void inc_counter(Buffer&) noexcept;
+void inc_counter(Block&) noexcept;
 
 class AuthTag {
     private:
@@ -71,15 +71,15 @@ class AuthTag {
         const uint128_t H_;
 
         // XOR last ciphertext to make the tag
-        const Buffer counter_0_;
+        const Block counter_0_;
 
         // starts with 0, since we're not supporting
         // authenticated data right now.
         uint128_t tag_{0};
 
     public:
-        AuthTag(Buffer H, Buffer counter_0)
-            : H_{AuthTag::bytes_to_uint128_t(H.block())},
+        AuthTag(Block H, Block counter_0)
+            : H_{AuthTag::bytes_to_uint128_t(H)},
               counter_0_{counter_0} {};
 
         const uint128_t& H() const noexcept;
@@ -103,7 +103,7 @@ class GCM : public CipherMode {
         uint64_t aad_len_{0};
 
     public:
-        GCM(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
+        GCM(AES& key, std::istream& in, std::ostream& out, Block& iv);
         void encrypt(Block& buf) noexcept override;
         void decrypt(Block& buf) noexcept override;
         std::vector<char> tag() noexcept override;
@@ -111,11 +111,11 @@ class GCM : public CipherMode {
     private:
         // Since the encryption/decryption of payload is the
         // same, only the auth tag is slightly different...
-        void encrypt_general(Buffer& block) noexcept;
+        void encrypt_general(Block& block) noexcept;
 
         // To encrypt counter 0 for auth tag, and to
         // initialize `H` multiplication variable
-        Buffer encrypt_cp(const Buffer& block) noexcept;
+        Block encrypt_cp(const Block& block) noexcept;
 };
 
 }  // namespace crypto::ciphermode

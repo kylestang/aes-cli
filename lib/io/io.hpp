@@ -50,6 +50,17 @@ class Writer {
             if (std::clog.bad()) std::abort();
         }
 
+        // writes `n` bytes from `buf` to `stream`
+        template <class CharT, class Traits = std::char_traits<CharT>>
+        static inline void write_block(
+            std::basic_ostream<CharT, Traits>& stream,
+            const std::array<uint8_t, 16>& buf, std::size_t n) {
+        if (!(stream << buf.begin())) {
+                throw IOError{"failed to write to output",
+                              errors::Error::Other};
+        }
+        }
+
         template <class CharT, class Traits = std::char_traits<CharT>>
         static inline void write_bytes(
             std::basic_ostream<CharT, Traits>& stream,
@@ -76,15 +87,15 @@ class Writer {
         template <class CharT, class Traits = std::char_traits<CharT>, class T>
         static inline void dbg(std::basic_ostream<CharT, Traits>& stream,
                                const T& t) noexcept {
-        /*
-#ifdef DEBUG
-            stream << "[DEBUG] " << t << std::endl;
-            if (stream.flush().bad()) {
-                std::clog << "write failed\n" << t << std::endl;
-                if (std::clog.bad()) std::abort();
-            }
-#endif
-*/
+            /*
+    #ifdef DEBUG
+                stream << "[DEBUG] " << t << std::endl;
+                if (stream.flush().bad()) {
+                    std::clog << "write failed\n" << t << std::endl;
+                    if (std::clog.bad()) std::abort();
+                }
+    #endif
+    */
         }
 };
 

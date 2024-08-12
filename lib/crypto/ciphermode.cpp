@@ -10,8 +10,7 @@
 namespace crypto::ciphermode {
 
 // CipherMode abstract class
-CipherMode::CipherMode(AES& key, std::istream& in, std::ostream& out,
-                       Buffer& iv)
+CipherMode::CipherMode(AES& key, std::istream& in, std::ostream& out, Block& iv)
     : key_{key}, input_fd_{in}, output_fd_{out}, diffusion_block_{iv} {}
 
 void CipherMode::key_encrypt_inplace(Block& arr) noexcept {
@@ -28,7 +27,8 @@ void CipherMode::encrypt_fd() noexcept {
     std::cout << "Entered encrypt_fd" << std::endl;
     Block buf{};
 
-    std::size_t bytes_read = input_fd_.readsome(buf.data(), BLOCK_SIZE);
+    std::size_t bytes_read =
+        input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
 
     while (true) {
         if (input_fd_.peek() <= 0) {  // last block
@@ -38,15 +38,16 @@ void CipherMode::encrypt_fd() noexcept {
         encrypt(buf);
         output_fd_ << buf.data();
 
-        bytes_read = input_fd_.readsome(buf.data(), BLOCK_SIZE);
+        bytes_read =
+            input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
     }
 
     pad_pkcs7(buf, bytes_read);
     key_encrypt_inplace(buf);
     output_fd_ << buf.data();
 
-    std::vector<char> t = tag();
-    output_fd_ << t.data();
+    // std::vector<char> t = tag();
+    // output_fd_ << t.data();
 
     // for (;;) {
     // }
@@ -57,7 +58,7 @@ void CipherMode::decrypt_fd() noexcept {
 };
 
 // ECB
-ECB::ECB(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
+ECB::ECB(AES& key, std::istream& in, std::ostream& out, Block& iv)
     : CipherMode{key, in, out, iv} {};
 
 void ECB::encrypt(Block& buf) noexcept { key_encrypt_inplace(buf); }
@@ -65,24 +66,20 @@ void ECB::encrypt(Block& buf) noexcept { key_encrypt_inplace(buf); }
 void ECB::decrypt(Block& buf) noexcept { key_decrypt_inplace(buf); }
 
 // CBC
-CBC::CBC(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
+CBC::CBC(AES& key, std::istream& in, std::ostream& out, Block& iv)
     : CipherMode{key, in, out, iv} {};
 
 void CBC::encrypt(Block& buf) noexcept {
-    /*
-    // buf ^= diffusion_block_;
+    buf ^= diffusion_block_;
     key_encrypt_inplace(buf);
     diffusion_block_ = buf;
-    */
 }
 
 void CBC::decrypt(Block& buf) noexcept {
-    /*
-    Buffer ciphertext{buf};
+    Block ciphertext{buf};
     key_decrypt_inplace(buf);
     buf ^= diffusion_block_;
     diffusion_block_ = ciphertext;
-    */
 }
 
 // GCM:
@@ -94,56 +91,34 @@ void CBC::decrypt(Block& buf) noexcept {
 //
 // 2. The `IV` has 12 random bytes, and the last 4 bytes should
 //    be initialized to zeros, these are the counter bytes.
-/*
-
-GCM::GCM(AES& key, Buffer iv, Buffer aad)
-    : CipherMode{key, iv},
-      tag_{encrypt_cp(Buffer{}), encrypt_cp(iv)},
-      aad_len_{aad.size()} {
-    // valid iv/counter buf, where the first 12 bytes are random,
-    // but the rest are 0's
-    for (uint8_t i = 12; i < diffusion_block_.size(); ++i) {
-        assert(diffusion_block_.at(i) == 0);
-    }
-
+GCM::GCM(AES& key, std::istream& in, std::ostream& out, Block& iv)
+    : CipherMode{key, in, out, iv}, tag_{encrypt_cp(Block{}), encrypt_cp(iv)} {
     // the actual message starts with counter value 1
     gcm_utils::inc_counter(diffusion_block_);
-    tag_.update_tag(aad.block());
-}
-*/
-
-GCM::GCM(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
-    : CipherMode{key, in, out, iv}, tag_{encrypt_cp(Buffer{}), encrypt_cp(iv)} {
-    // the actual message starts with counter value 1
-    gcm_utils::inc_counter(diffusion_block_);
-    tag_.update_tag(Buffer{}.block());
+    tag_.update_tag(Block{});
 };
 
-void GCM::encrypt_general(Buffer& m) noexcept {
-    /*
-    Buffer ctr_register{diffusion_block_};
+void GCM::encrypt_general(Block& m) noexcept {
+    Block ctr_register{diffusion_block_};
     key_encrypt_inplace(ctr_register);
     m ^= ctr_register;
     gcm_utils::inc_counter(diffusion_block_);
     payload_len_ += m.size();
-    */
 };
 
 void GCM::encrypt(Block& buf) noexcept {
-    /*
     encrypt_general(buf);
-    tag_.update_tag(buf.block());
-    */
+    tag_.update_tag(buf);
 }
 
 void GCM::decrypt(Block& buf) noexcept {
-    // tag_.update_tag(buf.block());
-    // encrypt_general(buf);
+    tag_.update_tag(buf);
+    encrypt_general(buf);
 }
 
-Buffer GCM::encrypt_cp(const Buffer& block) noexcept {
-    Buffer buf{block};
-    // encrypt(buf);
+Block GCM::encrypt_cp(const Block& block) noexcept {
+    Block buf{block};
+    encrypt(buf);
     return buf;
 };
 
@@ -166,8 +141,7 @@ std::vector<char> GCM::tag() noexcept {
 
 namespace gcm_utils {
 
-void inc_counter(Buffer& buffer) noexcept {
-    Buffer::Bytes& block = buffer.bytes();
+void inc_counter(Block& block) noexcept {
     for (uint8_t i = BLOCK_SIZE - 1; i >= gcm_utils::IV_SIZE; --i) {
         ++block[i];
         if (block[i] != 0) return;
@@ -228,8 +202,7 @@ uint128_t AuthTag::galois_multiply(const uint128_t& X, const uint128_t& H) {
 uint128_t AuthTag::value() const noexcept { return tag_; }
 
 uint128_t AuthTag::counter0() const noexcept {
-    Block ctr = counter_0_.block();
-    return AuthTag::bytes_to_uint128_t(ctr);
+    return AuthTag::bytes_to_uint128_t(counter_0_);
 }
 
 }  // namespace gcm_utils
