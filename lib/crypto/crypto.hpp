@@ -1,7 +1,9 @@
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 namespace crypto {
@@ -10,10 +12,15 @@ namespace crypto {
 inline constexpr const std::size_t BLOCK_SIZE = 16;
 using Block = std::array<uint8_t, BLOCK_SIZE>;
 
-Block& operator^=(Block& l, const Block& r); 
-Block operator^(const Block& l, const Block& r); 
+Block& operator^=(Block& l, const Block& r);
+Block operator^(const Block& l, const Block& r);
 
-inline void fill_bytes_n(Block& buf, std::size_t n) {
+// fill upto `n` bytes, where `n <= BLOCK_SIZE`
+inline void fill_bytes_n(Block& buf, uint8_t n) {
+    if (n > BLOCK_SIZE) {
+        throw std::logic_error{"byte count `n` exceeds `buf` size."};
+    }
+
     std::random_device dev;
     std::mt19937 rng{dev()};
     std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};

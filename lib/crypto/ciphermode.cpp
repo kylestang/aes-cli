@@ -113,18 +113,6 @@ void inc_counter(Buffer& buffer) noexcept {
     }
 }
 
-Buffer make_gcm_iv() noexcept {
-    Block block{};
-    fill_bytes_n(block, 12);
-
-    // counter bytes, zero values for the last 4 bytes
-    for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
-        block[i] = 0;
-    }
-
-    return Buffer{block, BLOCK_SIZE};
-}
-
 uint128_t AuthTag::bytes_to_uint128_t(const Block& bytes) {
     uint128_t result = 0;
 
