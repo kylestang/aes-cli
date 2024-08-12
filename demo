@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+
+# TODO: change this to `make release`
+make debug
+
+# export the key
+export AES_CLI_KEY=$(cat ./test_key.txt)
+
+# encrypt a file
+./build/aes-cli encrypt -i ./test_plaintext.txt -o ./test_ciphertext_CBC.txt -m CBC
+./build/aes-cli encrypt -i ./test_plaintext.txt -o ./test_ciphertext_GCM.txt -m GCM
+./build/aes-cli encrypt -i ./test_plaintext.txt -o ./test_ciphertext_ECB.txt -m ECB
+
+rm ./test_ciphertext*.txt
