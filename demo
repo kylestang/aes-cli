@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-# clean up output test files
-rm ./test_ciphertext*.txt
-
-make release
-
-rm ./test_ciphertext*.txt
-rm ./test_plaintext*.txt
-
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# clean up output test files
+rm "$DIR"/../test_ciphertext*.txt
+rm "$DIR"/../test_plaintext*.txt
+
+CMAKE_INSTALL_PREFIX="$DIR/.." make release
+
 # export the key
 export AES_CLI_KEY=$(cat "$DIR/../test_key.txt")
 
