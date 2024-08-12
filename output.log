@@ -1,0 +1,542 @@
+cmake -H. -Bbuild -DTEST=OFF -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON -DENABLE_UBSAN=ON
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/haln/School/aes-cli/build
+cmake --build build
+make[1]: Entering directory '/home/haln/School/aes-cli/build'
+[  7%] Built target errors
+[ 23%] Built target io
+[ 38%] Built target crypto
+[ 53%] Built target tables
+[ 69%] Built target aes
+[ 84%] Built target ciphermode
+[ 92%] Building CXX object CMakeFiles/aes-cli.dir/app/main.cpp.o
+[100%] Linking CXX executable aes-cli
+[100%] Built target aes-cli
+make[1]: Leaving directory '/home/haln/School/aes-cli/build'
+reading file!!
+reading file!!!!
+IV: 01 02 03 04 01 02 03 04 01 02 03 04 01 02 03 04 
+
+[DEBUG] Encrypt input to round 1: 20 0c 22 07 20 13 32 1a 16 06 15 79 4c 6e 49 2f 
+
+[DEBUG] Sub result: b7 fe 93 c5 b7 7d 23 a2 47 6f 59 b6 29 9f 3b 15 
+
+[DEBUG] Shift result: b7 7d 59 15 b7 6f 3b c5 47 9f 93 a2 29 fe 23 b6 
+
+[DEBUG] Mix result: be b3 47 cc 3a e1 fa 07 05 6e 18 9a de 1d 50 d1 
+
+[DEBUG] Encrypt input to round 2: d9 da 11 87 0f a0 8a 62 44 3c 42 f6 b6 2c 37 e2 
+
+[DEBUG] Sub result: 35 57 82 17 76 e0 7e aa 1b eb 2c 42 4e 71 9a 98 
+
+[DEBUG] Shift result: 35 e0 2c 98 76 eb 9a 17 1b 71 82 aa 4e 57 7e 42 
+
+[DEBUG] Mix result: e5 02 3e b8 47 19 8b c5 8d ce 90 91 59 20 23 7f 
+
+[DEBUG] Encrypt input to round 3: 6b ee b3 96 86 c6 43 9e 28 7b 29 b9 b4 ff d7 7c 
+
+[DEBUG] Sub result: 7f 28 6d 90 44 b4 1a 0b 34 21 a5 56 8d 16 0e 10 
+
+[DEBUG] Shift result: 7f b4 a5 10 44 21 0e 90 34 16 6d 0b 8d 28 1a 56 
+
+[DEBUG] Mix result: 8c e8 aa b0 75 84 d2 d8 34 a4 e5 31 35 a5 6b 12 
+
+[DEBUG] Encrypt input to round 4: be 1f 43 80 72 32 4b 8d 72 40 26 08 1b 70 cf 18 
+
+[DEBUG] Sub result: ae c0 1a cd 40 23 b3 5d 40 09 f7 30 af 51 8a ad 
+
+[DEBUG] Shift result: ae 23 f7 ad 40 09 8a cd 40 51 1a 5d af c0 b3 30 
+
+[DEBUG] Mix result: 78 47 94 7c dc 1a 0a c2 34 91 c2 31 9d ca 42 f9 
+
+[DEBUG] Encrypt input to round 5: f7 e2 7e 63 92 60 28 86 df 5e 59 5d 9b da 2d 96 
+
+[DEBUG] Sub result: 68 98 f3 fb 4f d0 34 44 9e 58 cb 4c 14 57 d8 90 
+
+[DEBUG] Shift result: 68 d0 cb 90 4f 58 d8 fb 9e 57 f3 44 14 98 34 4c 
+
+[DEBUG] Mix result: e0 05 9e 98 55 77 aa bc 69 7a f8 95 e3 2f 30 08 
+
+[DEBUG] Encrypt input to round 6: bd 38 df 00 0f fc 72 71 75 15 e3 61 d1 95 8f f6 
+
+[DEBUG] Sub result: 7a 07 9e 63 76 b0 40 a3 9d 59 11 ef 3e 2a 73 42 
+
+[DEBUG] Shift result: 7a b0 11 42 76 59 73 63 9d 2a 9e a3 3e 07 40 ef 
+
+[DEBUG] Mix result: 6c 70 2e ab 17 32 6c 76 62 d3 6e 55 da 1f 93 c0 
+
+[DEBUG] Encrypt input to round 7: 13 dd 7f 97 26 e5 1f 0e b8 cb 86 41 06 17 14 bb 
+
+[DEBUG] Sub result: 7d c1 d2 88 f7 d9 c0 ab 6c 1f 44 83 6f f0 fa ea 
+
+[DEBUG] Shift result: 7d d9 44 ea f7 1f fa 88 6c f0 d2 ab 6f c1 c0 83 
+
+[DEBUG] Mix result: 24 f2 09 d5 a6 54 84 ec aa 51 c5 db c5 2e ab ad 
+
+[DEBUG] Encrypt input to round 8: ff ff 5f 6c 27 d2 0a 98 37 b8 50 5b 6a 7d 81 d3 
+
+[DEBUG] Sub result: 16 16 cf 50 cc b5 67 46 9a 6c 53 39 02 ff 0c 66 
+
+[DEBUG] Shift result: 16 b5 53 66 cc 6c 0c 50 9a ff cf 46 02 16 67 39 
+
+[DEBUG] Mix result: dd f4 af 10 6b 50 48 8f bc 73 2a 09 60 be 91 05 
+
+[DEBUG] Encrypt input to round 9: 47 bc 0d 55 c0 cf 99 b2 cd f4 13 20 cd 31 2f 57 
+
+[DEBUG] Sub result: a0 65 d7 fc ba 8a ee 37 bd bf 7d b7 bd c7 15 5b 
+
+[DEBUG] Shift result: a0 8a 7d 5b ba bf 15 fc bd c7 d7 37 bd 65 ee b7 
+
+[DEBUG] Mix result: f8 73 3d ba 5c 1c 30 9c d3 7d 96 a2 97 e9 dd 22 
+
+[DEBUG] Encrypt input to round 10: b6 0d c5 03 93 e4 46 51 81 6c 75 ef 6a ab 14 11 
+
+[DEBUG] Sub result: 4e d7 a6 7b dc 69 5a d1 0c 50 9d df 02 62 fa 82 
+
+[DEBUG] Shift result: 4e 69 9d 82 dc 50 fa 7b 0c 62 a6 d1 02 d7 5a df 
+
+[DEBUG] Mix result: 38 a2 9b 39 d2 12 ee 23 c9 e8 51 69 e3 86 1b 2e 
+
+[DEBUG] Encrypt input to round 11: 9e 37 fa 28 df 18 5e 0f b5 65 d8 6c 32 84 2c 79 
+
+[DEBUG] Sub result: 0b 9a 2d 34 9e ad 58 76 d5 4d 61 50 23 5f 71 b6 
+
+[DEBUG] Shift result: 0b ad 61 b6 9e 4d 71 34 d5 5f 2d 76 23 9a 58 50 
+
+[DEBUG] Mix result: 2d 5f a5 a6 b5 a3 6d ed 0b 6a 4a fa fb b4 f9 07 
+
+[DEBUG] Encrypt input to round 12: 5d 56 c7 44 0a 52 79 c2 e6 8a bd 98 eb 16 c7 56 
+
+[DEBUG] Sub result: 4c b1 c6 1b 67 00 b6 25 8e 7e 7a 46 e9 47 c6 b1 
+
+[DEBUG] Shift result: 4c 00 7a b1 67 7e c6 1b 8e 47 c6 25 e9 b1 b6 46 
+
+[DEBUG] Mix result: 53 73 70 d7 91 d1 a3 27 2d 74 31 42 f1 17 e5 ab 
+
+[DEBUG] Encrypt input to round 13: ef 54 c0 0c 20 fc a3 d0 e0 d4 b8 b0 ed b5 5b 0e 
+
+[DEBUG] Sub result: df 20 ba fe b7 b0 0a 70 e1 48 6c e7 55 d5 39 ab 
+
+[DEBUG] Shift result: df b0 6c ab b7 48 39 fe e1 d5 ba 70 55 20 0a e7 
+
+[DEBUG] Mix result: a9 bb 51 eb 6a 92 94 54 77 f5 cb b7 27 ec 53 00 
+
+reading file!!
+reading file!!!!
+[DEBUG] Encrypt input to round 1: 49 6b 4d 6f 4e 31 46 71 65 68 72 77 49 68 4e 2f 
+
+[DEBUG] Sub result: 3b 7f e3 a8 2f c7 5a a3 4d 45 40 f5 3b 45 2f 15 
+
+[DEBUG] Shift result: 3b c7 40 15 2f 45 2f a8 4d 45 e3 a3 3b 7f 5a f5 
+
+[DEBUG] Mix result: 71 7b 43 e0 16 7c d7 50 15 5a 2b 2c 58 de f4 99 
+
+[DEBUG] Encrypt input to round 2: 16 12 15 ab 23 3d a7 35 54 08 71 40 30 ef 93 aa 
+
+[DEBUG] Sub result: 47 c9 59 62 26 27 5c 96 20 30 a3 09 04 df dc ac 
+
+[DEBUG] Shift result: 47 27 a3 ac 26 30 dc 62 20 df 59 96 04 c9 5c 09 
+
+[DEBUG] Mix result: e8 5b d2 0e a2 5b 13 42 f5 f8 ec d1 1d 60 6e 8b 
+
+[DEBUG] Encrypt input to round 3: 66 b7 5f 20 63 84 db 19 50 4d 55 f9 f0 bf 9a 88 
+
+[DEBUG] Sub result: 33 a9 cf b7 fb 5f b9 d4 53 e3 fc 99 8c 08 b8 c4 
+
+[DEBUG] Shift result: 33 5f fc c4 fb e3 b8 b7 53 08 cf d4 8c a9 b9 99 
+
+[DEBUG] Mix result: bf 56 d8 65 dc 42 b1 38 a5 dd b9 81 c3 8c fc b6 
+
+[DEBUG] Encrypt input to round 4: 8d a1 31 55 db f4 28 6d e3 39 7a b8 ed 59 58 bc 
+
+[DEBUG] Sub result: 5d 32 c7 fc b9 bf 34 3c 11 12 da 6c 55 cb 6a 65 
+
+[DEBUG] Shift result: 5d bf da 65 b9 12 6a fc 11 cb c7 3c 55 32 34 6c 
+
+[DEBUG] Mix result: df 28 e2 48 c9 df 60 4b 9f f2 0b 47 a4 01 bb 21 
+
+[DEBUG] Encrypt input to round 5: 50 8d 08 57 87 a5 42 0f 74 3d 90 2b a2 11 d4 4e 
+
+[DEBUG] Sub result: 53 5d 30 5b 17 06 2c 76 92 27 60 f1 3a 82 48 2f 
+
+[DEBUG] Shift result: 53 06 60 2f 17 27 48 5b 92 82 30 76 3a 5d 2c f1 
+
+[DEBUG] Mix result: e3 d0 e4 cd 54 da 4d e0 e4 ab ea f3 4e 05 37 c6 
+
+[DEBUG] Encrypt input to round 6: be ed a5 55 0e 51 95 2d f8 c4 f1 07 7c bf 88 38 
+
+[DEBUG] Sub result: ae 55 06 fc ab d1 2a d8 41 1c a1 c5 10 08 c4 07 
+
+[DEBUG] Shift result: ae d1 a1 07 ab 1c c4 fc 41 08 06 d8 10 55 2a c5 
+
+[DEBUG] Mix result: 89 e8 2f 97 51 38 3b dd 44 83 36 66 30 01 45 de 
+
+[DEBUG] Encrypt input to round 7: f6 45 7e ab 60 ef 48 a5 9e 9b de 72 ec 09 c2 a5 
+
+[DEBUG] Sub result: 42 6e f3 62 d0 df 52 06 0b 14 1d 40 ce 01 25 06 
+
+[DEBUG] Shift result: 42 df 1d 06 d0 14 25 62 0b 01 f3 06 ce 6e 52 40 
+
+[DEBUG] Mix result: e5 c6 ad 08 c0 f5 28 9e e0 01 fd e3 27 a4 c4 f5 
+
+[DEBUG] Encrypt input to round 8: 3e cb fb b1 41 73 a6 ea 7d e8 68 63 88 f7 ee 8b 
+
+[DEBUG] Sub result: b2 1f 0f c8 83 8f 24 87 ff 9b 45 fb c4 68 28 3d 
+
+[DEBUG] Shift result: b2 8f 45 3d 83 9b 28 c8 ff 68 0f 87 c4 1f 24 fb 
+
+[DEBUG] Mix result: 8d 45 f0 7d 4b 1e 0b a6 d5 b9 1b 68 6d 6d 85 81 
+
+[DEBUG] Encrypt input to round 9: 17 0d 52 38 e0 81 da 9b a4 3e 22 41 c0 e2 3b d3 
+
+[DEBUG] Sub result: f0 d7 00 07 e1 0c 57 14 49 b2 93 83 ba 98 e2 66 
+
+[DEBUG] Shift result: f0 0c 93 66 e1 b2 e2 07 49 98 00 14 ba d7 57 83 
+
+[DEBUG] Mix result: 1a 20 6b 58 f1 a4 85 66 35 76 ed 6b d9 75 5d 48 
+
+[DEBUG] Encrypt input to round 10: 54 5e 93 e1 3e 5c f3 ab 67 67 0e 26 24 37 94 7b 
+
+[DEBUG] Sub result: 20 58 dc f8 b2 4a 0d 62 85 85 ab f7 36 9a 22 21 
+
+[DEBUG] Shift result: 20 4a ab 21 b2 85 22 f8 85 9a dc 62 36 58 0d f7 
+
+[DEBUG] Mix result: 14 73 44 c3 31 3d 60 81 1a b7 1a 16 7e 66 76 fa 
+
+[DEBUG] Encrypt input to round 11: b2 e6 25 d2 3c 37 d0 ad 66 3a 93 13 af 64 41 ad 
+
+[DEBUG] Sub result: 37 8e 3f b5 eb 9a 70 95 33 80 dc 7d 79 43 83 95 
+
+[DEBUG] Shift result: 37 9a dc 95 eb 80 83 b5 33 43 3f 95 79 8e 70 7d 
+
+[DEBUG] Mix result: 92 f2 aa 2e 60 db b2 54 09 61 aa 18 76 93 90 8f 
+
+[DEBUG] Encrypt input to round 12: e2 fb c8 cc df 2a a6 7b e4 81 5d 7a 66 31 ae de 
+
+[DEBUG] Sub result: 98 0f e8 4b 9e e5 24 21 69 0c 4c da 33 c7 e4 1d 
+
+[DEBUG] Shift result: 98 e5 4c 1d 9e 0c e4 4b 69 c7 e8 21 33 0f 24 da 
+
+[DEBUG] Mix result: 4e 80 c2 20 9c fa 9c c7 49 fe 06 d6 89 9b 01 d1 
+
+[DEBUG] Encrypt input to round 13: f2 a7 72 fb 2d d7 9c 30 84 5e 8f 24 95 39 bf 74 
+
+[DEBUG] Sub result: 89 5c 40 0f d8 0e de 04 5f 58 73 36 2a 12 08 92 
+
+[DEBUG] Shift result: 89 0e 73 92 d8 58 08 0f 5f 12 40 04 2a 5c de 36 
+
+[DEBUG] Mix result: fa 92 cc c2 44 7f 81 3d cc bf c1 bb 58 dd 8b 90 
+
+[DEBUG] Encrypt input to round 1: 49 6b 4d 6f 4e 31 46 71 65 68 72 77 49 68 4e 2e 
+
+[DEBUG] Sub result: 3b 7f e3 a8 2f c7 5a a3 4d 45 40 f5 3b 45 2f 31 
+
+[DEBUG] Shift result: 3b c7 40 31 2f 45 2f a8 4d 45 e3 a3 3b 7f 5a f5 
+
+[DEBUG] Mix result: 55 5f 2f a8 16 7c d7 50 15 5a 2b 2c 58 de f4 99 
+
+[DEBUG] Encrypt input to round 2: 32 36 79 e3 23 3d a7 35 54 08 71 40 30 ef 93 aa 
+
+[DEBUG] Sub result: 23 05 b6 11 26 27 5c 96 20 30 a3 09 04 df dc ac 
+
+[DEBUG] Shift result: 23 27 a3 ac 26 30 dc 11 20 df b6 96 04 05 5c 09 
+
+[DEBUG] Mix result: 20 3f b6 a2 d1 28 86 a4 1a d2 29 3e 52 e3 a2 47 
+
+[DEBUG] Encrypt input to round 3: ae d3 3b 8c 10 f7 4e ff bf 67 90 16 bf 3c 56 44 
+
+[DEBUG] Sub result: e4 66 e2 64 ca 68 2f 16 08 85 60 47 08 eb b1 1b 
+
+[DEBUG] Shift result: e4 68 60 1b ca 85 b1 64 08 eb e2 16 08 66 2f 47 
+
+[DEBUG] Mix result: 10 8f 61 09 ce 77 9a b9 c2 ee 06 3d d2 f2 f9 df 
+
+[DEBUG] Encrypt input to round 4: 22 78 88 39 c9 c1 03 ec 84 0a c5 04 fc 27 5d d5 
+
+[DEBUG] Sub result: 93 bc c4 12 dd 78 7b ce 5f 67 a6 f2 b0 cc 4c 03 
+
+[DEBUG] Shift result: 93 78 a6 03 dd 67 4c 12 5f cc c4 ce b0 bc 7b f2 
+
+[DEBUG] Mix result: 10 91 b9 76 56 d5 14 73 fb 45 49 6e 2d ac f7 f3 
+
+[DEBUG] Encrypt input to round 5: 9f 34 53 69 18 af 36 37 10 8a d2 02 2b bc 98 9c 
+
+[DEBUG] Sub result: db 18 ed f9 ad 79 05 9a ca 7e b5 77 f1 65 46 de 
+
+[DEBUG] Shift result: db 79 b5 de ad 7e 46 f9 ca 65 ed 9a f1 18 05 77 
+
+[DEBUG] Mix result: 4d 33 aa 1d 7c 62 4f 3d 57 b6 db e2 a3 b9 7a fb 
+
+[DEBUG] Encrypt input to round 6: 10 0e eb 85 26 e9 97 f0 4b d9 c0 16 91 03 c5 05 
+
+[DEBUG] Sub result: ca ab e9 97 f7 1e 88 8c b3 35 ba 47 81 7b a6 6b 
+
+[DEBUG] Shift result: ca 1e ba 6b f7 35 a6 97 b3 7b e9 8c 81 ab 88 47 
+
+[DEBUG] Mix result: 7c 48 06 37 9b fb 37 a4 95 e9 8e 5f 30 08 e8 35 
+
+[DEBUG] Encrypt input to round 7: 03 e5 57 0b aa 2c 44 dc 4f f1 66 4b ec 00 6f 4e 
+
+[DEBUG] Sub result: 7b d9 5b 2b ac 71 1b 86 84 a1 33 b3 ce 63 a8 2f 
+
+[DEBUG] Shift result: 7b 71 33 2f ac a1 a8 2b 84 63 5b 86 ce d9 1b b3 
+
+[DEBUG] Mix result: 79 e3 1d 91 38 3d 3b b0 6b 29 c0 b8 5f f9 ef f6 
+
+[DEBUG] Encrypt input to round 8: a2 ee 4b 28 b9 bb b5 c4 f6 c0 55 38 f0 aa c5 88 
+
+[DEBUG] Sub result: 3a 28 b3 34 56 ea d5 1c 42 ba fc 07 8c ac a6 c4 
+
+[DEBUG] Shift result: 3a ea fc c4 56 ba a6 34 42 ac b3 1c 8c 28 d5 07 
+
+[DEBUG] Mix result: 69 2e 64 cb eb fc e7 8e c4 d3 b7 e1 a9 bf 1c 7c 
+
+[DEBUG] Encrypt input to round 9: f3 66 c6 8e 40 63 36 b3 b5 54 8e c8 04 30 a2 2e 
+
+[DEBUG] Sub result: 0d 33 b4 19 09 fb 05 6d d5 20 19 e8 f2 04 3a 31 
+
+[DEBUG] Shift result: 0d fb 19 31 09 20 3a 19 d5 04 b4 6d f2 33 05 e8 
+
+[DEBUG] Mix result: 24 fa 97 97 51 1e 76 33 64 77 15 0e 47 73 e8 f0 
+
+[DEBUG] Encrypt input to round 10: 6a 84 6f 2e 9e e6 00 fe 36 66 f6 43 ba 31 21 c3 
+
+[DEBUG] Sub result: 02 5f a8 31 0b 8e 63 bb 05 33 42 1a f4 c7 fd 2e 
+
+[DEBUG] Shift result: 02 8e 42 2e 0b 33 fd 31 05 c7 a8 bb f4 5f 63 1a 
+
+[DEBUG] Mix result: e1 ed 7a 96 8f 40 8a b1 4b c8 5f 0d 6b f5 43 0f 
+
+[DEBUG] Encrypt input to round 11: 47 78 1b 87 82 4a 3a 9d 37 45 d6 08 ba f7 74 58 
+
+[DEBUG] Sub result: a0 bc af 17 13 d6 80 5e 9a 6e f6 30 f4 68 92 6a 
+
+[DEBUG] Shift result: a0 d6 f6 6a 13 6e 92 17 9a 68 af 5e f4 bc 80 30 
+
+[DEBUG] Mix result: a6 7c 3f 0f 11 75 7b e7 66 fe 55 ce 9c 3c 03 5b 
+
+[DEBUG] Encrypt input to round 12: d6 75 5d ed ae 84 6f c8 8b 1e a2 ac 8c 9e 3d 0a 
+
+[DEBUG] Sub result: f6 9d 4c 55 e4 5f a8 e8 3d 72 3a 91 64 0b 27 67 
+
+[DEBUG] Shift result: f6 5f 3a 67 e4 72 27 55 3d 0b 4c e8 64 9d a8 91 
+
+[DEBUG] Mix result: 4b 61 74 aa 37 3c 27 c8 c3 17 8d cb 4d 37 1a a0 
+
+[DEBUG] Encrypt input to round 13: f7 46 c4 71 86 11 27 3f 0e b7 04 39 51 95 a4 05 
+
+[DEBUG] Sub result: 68 5a 1c a3 44 82 cc 75 ab a9 f2 12 d1 2a 49 6b 
+
+[DEBUG] Shift result: 68 82 f2 6b 44 a9 49 a3 ab 2a 1c 75 d1 5a cc 12 
+
+[DEBUG] Mix result: d4 11 a8 1e 82 75 81 71 5a ae 26 3a 89 38 3e da 
+
+[DEBUG] Encrypt input to round 1: 49 6b 4d 6f 4e 31 46 71 65 68 72 77 49 68 4e 2c 
+
+[DEBUG] Sub result: 3b 7f e3 a8 2f c7 5a a3 4d 45 40 f5 3b 45 2f 71 
+
+[DEBUG] Shift result: 3b c7 40 71 2f 45 2f a8 4d 45 e3 a3 3b 7f 5a f5 
+
+[DEBUG] Mix result: 15 1f ef 28 16 7c d7 50 15 5a 2b 2c 58 de f4 99 
+
+[DEBUG] Encrypt input to round 2: 72 76 b9 63 23 3d a7 35 54 08 71 40 30 ef 93 aa 
+
+[DEBUG] Sub result: 40 38 56 fb 26 27 5c 96 20 30 a3 09 04 df dc ac 
+
+[DEBUG] Shift result: 40 27 a3 ac 26 30 dc fb 20 df 56 96 04 38 5c 09 
+
+[DEBUG] Mix result: e6 5c d5 07 3b c2 a3 6b fa e9 f2 de 15 99 9f 7a 
+
+[DEBUG] Encrypt input to round 3: 68 b0 58 29 fa 1d 6b 30 5f 5c 4b f6 f8 46 6b 79 
+
+[DEBUG] Sub result: 45 e7 6a a5 2d a4 7f 04 cf 4a b3 42 41 5a 7f b6 
+
+[DEBUG] Shift result: 45 a4 b3 b6 2d 4a 7f a5 cf 5a 6a 04 41 e7 7f 42 
+
+[DEBUG] Mix result: 78 6e 5d af 5e 9d 6d 13 05 c1 4d 72 8d 57 9e df 
+
+[DEBUG] Encrypt input to round 4: 4a 99 b4 9f 59 2b f4 46 43 25 8e 4b a3 82 3a d5 
+
+[DEBUG] Sub result: d6 ee 8d db cb f1 bf 5a 1a 3f 19 b3 0a 13 80 03 
+
+[DEBUG] Shift result: d6 f1 19 03 cb 3f 80 db 1a 13 8d 5a 0a ee bf b3 
+
+[DEBUG] Mix result: a5 07 10 8f 97 f5 99 54 d6 ea e6 04 31 a4 4f 32 
+
+[DEBUG] Encrypt input to round 5: 2a a2 fa 90 d9 8f bb 10 3d 25 7d 68 37 b4 20 5d 
+
+[DEBUG] Sub result: e5 3a 2d 60 35 73 ea ca 27 3f ff 45 9a 8d b7 4c 
+
+[DEBUG] Shift result: e5 73 ff 4c 35 3f b7 60 27 8d 2d ca 9a 3a ea 45 
+
+[DEBUG] Mix result: f7 55 a7 20 fc e9 df 17 25 9b b5 46 ce 8e a0 ef 
+
+[DEBUG] Encrypt input to round 6: aa 68 e6 b8 a6 62 07 da 39 f4 ae b2 fc 34 1f 11 
+
+[DEBUG] Sub result: ac 45 8e 6c 24 aa c5 57 12 bf e4 37 b0 18 c0 82 
+
+[DEBUG] Shift result: ac aa e4 82 24 bf c0 6c 12 18 8e 57 b0 45 c5 37 
+
+[DEBUG] Mix result: c0 56 48 be 3e 76 b4 cb d5 fc f4 0e 46 59 3d 25 
+
+[DEBUG] Encrypt input to round 7: bf fb 19 82 0f a1 c7 b3 0f e4 1c 1a 9a 51 ba 5e 
+
+[DEBUG] Sub result: 08 0f d4 13 76 32 c6 6d 76 69 9c a2 b8 d1 f4 58 
+
+[DEBUG] Shift result: 08 32 9c 58 76 69 f4 13 76 d1 d4 6d b8 0f c6 a2 
+
+[DEBUG] Mix result: 82 8b f1 06 b0 b0 d9 21 3d c5 a3 45 1e 55 dd 45 
+
+[DEBUG] Encrypt input to round 8: 59 86 a7 bf 31 36 57 55 a0 2c 36 c5 b1 06 f7 3b 
+
+[DEBUG] Sub result: cb 44 5c 08 c7 05 5b fc e0 71 05 a6 c8 6f 68 e2 
+
+[DEBUG] Shift result: cb 05 05 e2 c7 71 68 08 e0 6f 5c fc c8 44 5b a6 
+
+[DEBUG] Mix result: 65 2c f9 99 66 95 7e 5b ca 26 28 eb ba 0b cb 0b 
+
+[DEBUG] Encrypt input to round 9: ff 64 5b dc cd 0a af 66 bb a1 11 c2 17 84 75 59 
+
+[DEBUG] Sub result: 16 43 39 86 bd 67 79 33 ea 32 82 25 f0 5f 9d cb 
+
+[DEBUG] Shift result: 16 67 82 cb bd 32 9d 86 ea 5f 39 33 f0 43 79 25 
+
+[DEBUG] Mix result: cc 8e 28 52 2c e3 3f 64 24 2c 92 25 62 d8 2e 7b 
+
+[DEBUG] Encrypt input to round 10: 82 f0 d0 eb e3 1b 49 a9 76 3d 71 68 9f 9a e7 48 
+
+[DEBUG] Sub result: 13 8c 70 e9 11 af 3b d3 38 27 a3 45 db b8 94 52 
+
+[DEBUG] Shift result: 13 af a3 52 11 27 94 e9 38 b8 70 d3 db 8c 3b 45 
+
+[DEBUG] Mix result: 3d fa 17 9d 36 11 25 49 00 10 0e 3d 5c d0 ee 4b 
+
+[DEBUG] Encrypt input to round 11: 9b 6f 76 8c 3b 1b 95 65 7c 9d 87 38 8d d2 d9 1c 
+
+[DEBUG] Sub result: 14 a8 38 64 e2 af 2a 4d 10 5e 17 07 5d b5 35 9c 
+
+[DEBUG] Shift result: 14 af 17 9c e2 5e 35 64 10 b5 38 4d 5d a8 2a 07 
+
+[DEBUG] Mix result: 49 f4 2a a7 6c 65 7a 9e 91 64 02 27 74 6f a8 6b 
+
+[DEBUG] Encrypt input to round 12: 39 fd 48 45 d3 94 6e b1 7c 84 f5 45 64 cd 96 3a 
+
+[DEBUG] Sub result: 12 54 52 6e 66 22 9f c8 10 5f e6 6e 43 bd 90 80 
+
+[DEBUG] Shift result: 12 22 e6 80 66 5f 90 6e 10 bd 52 c8 43 54 9f 6e 
+
+[DEBUG] Mix result: 24 e7 7c e9 d3 1d b0 b9 66 4f 4a 54 8b 3f 80 d2 
+
+[DEBUG] Encrypt input to round 13: 98 c0 cc 32 62 30 b0 4e ab ef c3 a6 97 9d 3e 77 
+
+[DEBUG] Sub result: 46 ba 4b 23 aa 04 e7 2f 62 df 2e 24 88 5e b2 f5 
+
+[DEBUG] Shift result: 46 04 2e f5 aa df b2 23 62 5e 4b 2f 88 ba e7 24 
+
+[DEBUG] Mix result: 5b c9 1a 11 a4 e1 6f ce 42 2c db ed 1d f1 8b 96 
+
+[DEBUG] Encrypt input to round 1: 49 6b 4d 6f 4e 31 46 71 65 68 72 77 49 68 4e 23 
+
+[DEBUG] Sub result: 3b 7f e3 a8 2f c7 5a a3 4d 45 40 f5 3b 45 2f 26 
+
+[DEBUG] Shift result: 3b c7 40 26 2f 45 2f a8 4d 45 e3 a3 3b 7f 5a f5 
+
+[DEBUG] Mix result: 42 48 16 86 16 7c d7 50 15 5a 2b 2c 58 de f4 99 
+
+[DEBUG] Encrypt input to round 2: 25 21 40 cd 23 3d a7 35 54 08 71 40 30 ef 93 aa 
+
+[DEBUG] Sub result: 3f fd 09 bd 26 27 5c 96 20 30 a3 09 04 df dc ac 
+
+[DEBUG] Shift result: 3f 27 a3 ac 26 30 dc bd 20 df 09 96 04 fd 5c 09 
+
+[DEBUG] Mix result: 18 23 aa 86 7d 84 69 e7 a5 08 4c 81 41 08 5a bf 
+
+[DEBUG] Encrypt input to round 3: 96 cf 27 a8 bc 5b a1 bc 00 bd f5 a9 ac d7 ae bc 
+
+[DEBUG] Sub result: 90 8a cc c2 65 39 32 65 63 7a e6 d3 91 0e e4 65 
+
+[DEBUG] Shift result: 90 39 e6 65 65 7a e4 c2 63 0e cc 65 91 8a 32 d3 
+
+[DEBUG] Mix result: f3 b6 d1 be 62 64 91 ae 7d 55 41 ad 5d 1b 11 ad 
+
+[DEBUG] Encrypt input to round 4: c1 41 38 8e 65 d2 08 fb 3b b1 82 94 73 ce b5 a7 
+
+[DEBUG] Sub result: 78 83 07 19 4d b5 30 0f e2 c8 13 22 8f 8b d5 5c 
+
+[DEBUG] Shift result: 78 b5 13 5c 4d c8 d5 19 e2 8b 07 0f 8f 83 30 22 
+
+[DEBUG] Mix result: 7b 60 0f 96 15 bb 1f f8 51 e9 76 af 89 e0 0a 7d 
+
+[DEBUG] Encrypt input to round 5: f4 c5 e5 89 5b c1 3d bc ba 26 ed c3 8f f0 65 12 
+
+[DEBUG] Sub result: bf a6 d9 a7 39 78 27 65 f4 f7 55 2e 73 8c 4d c9 
+
+[DEBUG] Shift result: bf 78 55 c9 39 f7 4d a7 f4 8c d9 65 73 a6 27 2e 
+
+[DEBUG] Mix result: 71 79 2d 7e 9a bc a6 a4 c0 e2 7e 98 1e 63 e9 48 
+
+[DEBUG] Encrypt input to round 6: 2c 44 6c e6 c0 37 7e 69 dc 8d 65 6c 2c d9 56 b6 
+
+[DEBUG] Sub result: 71 1b 50 8e ba 9a f3 f9 86 5d 4d 50 71 35 b1 4e 
+
+[DEBUG] Shift result: 71 9a 4d 4e ba 5d b1 8e 86 35 50 f9 71 1b f3 50 
+
+[DEBUG] Mix result: 54 c7 a3 d8 b7 46 17 3e e1 e5 03 1d 6c 19 67 db 
+
+[DEBUG] Encrypt input to round 7: 2b 6a f2 e4 86 91 64 46 3b fd eb 09 b0 11 e0 a0 
+
+[DEBUG] Sub result: f1 02 89 69 44 81 43 5a e2 54 e9 01 e7 82 e1 e0 
+
+[DEBUG] Shift result: f1 81 e9 e0 44 54 e1 69 e2 82 89 5a e7 02 43 01 
+
+[DEBUG] Mix result: 68 28 82 bb fc bd 72 ab 91 27 87 82 91 27 60 71 
+
+[DEBUG] Encrypt input to round 8: b3 25 d4 02 7d 3b fc df 0c ce 12 02 3e 74 4a 0f 
+
+[DEBUG] Sub result: 6d 3f 48 77 ff e2 b0 9e fe 8b c9 77 b2 92 d6 76 
+
+[DEBUG] Shift result: 6d e2 c9 76 ff 8b d6 77 fe 92 48 9e b2 3f b0 77 
+
+[DEBUG] Mix result: 58 84 9c 70 c2 e4 5a a9 9c 87 45 e4 f9 70 6f ac 
+
+[DEBUG] Encrypt input to round 9: c2 cc 3e 35 69 7b 8b 94 ed 00 7c cd 54 ff d1 fe 
+
+[DEBUG] Sub result: 25 4b b2 96 f9 21 3d 22 55 63 10 bd 20 16 3e bb 
+
+[DEBUG] Shift result: 25 21 10 bb f9 63 3e 96 55 16 b2 22 20 4b 3d bd 
+
+[DEBUG] Mix result: 82 ec f2 33 e4 eb 47 7a 00 96 5a 1f 1d 4c cd 77 
+
+[DEBUG] Encrypt input to round 10: cc 92 0a 8a 2b 13 31 b7 52 87 b9 52 e0 0e 04 44 
+
+[DEBUG] Sub result: 4b 4f 67 7e f1 7d c7 a9 00 17 56 00 e1 ab f2 1b 
+
+[DEBUG] Shift result: 4b 7d 56 1b f1 17 f2 7e 00 ab 67 a9 e1 4f c7 00 
+
+[DEBUG] Mix result: 5c 50 b7 c0 4c ac 9b 11 28 4d 85 85 cf 2d 3b b0 
+
+[DEBUG] Encrypt input to round 11: fa c5 d6 d1 41 a6 2b 3d 54 c0 0c 80 1e 2f 0c e7 
+
+[DEBUG] Sub result: 2d a6 f6 3e 83 24 f1 27 20 ba fe cd 72 15 fe 94 
+
+[DEBUG] Shift result: 2d 24 fe 94 83 ba fe 3e 20 15 f6 27 72 a6 f1 cd 
+
+[DEBUG] Mix result: 5c e8 49 9e 08 cb 9c a6 ae 2c ab cd 29 e0 61 40 
+
+[DEBUG] Encrypt input to round 12: 2c e1 2b 7c b7 3a 88 89 43 cc 5c af 39 42 5f 11 
+
+[DEBUG] Sub result: 71 f8 f1 10 a9 80 c4 a7 1a 4b 4a 79 12 2c cf 82 
+
+[DEBUG] Shift result: 71 80 4a 82 a9 4b cf 10 1a 2c f1 a7 12 f8 c4 79 
+
+[DEBUG] Mix result: b1 36 f8 46 4b 65 57 44 16 ed 3d a6 8a d7 f2 f8 
+
+[DEBUG] Encrypt input to round 13: 0d 11 48 9d fa 48 57 b3 db 4d b4 54 96 75 4c 5d 
+
+[DEBUG] Sub result: d7 82 52 5e 2d 52 5b 6d b9 e3 8d 20 90 9d 29 4c 
+
+[DEBUG] Shift result: d7 52 8d 4c 2d e3 29 5e b9 9d 52 6d 90 82 5b 20 
+
+[DEBUG] Mix result: 82 b3 50 25 13 d5 7e 01 ea 03 37 c5 dd 42 c4 32 
+

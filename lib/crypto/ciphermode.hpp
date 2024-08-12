@@ -29,7 +29,7 @@ class CipherMode {
         virtual void decrypt(Block&) noexcept = 0;
 
         void encrypt_fd() noexcept;
-        void decrypt_fd() noexcept;
+        void decrypt_fd();
 
         // final call to compute the authenticated tag.
         virtual std::vector<char> tag() noexcept { return {}; }
@@ -79,8 +79,7 @@ class AuthTag {
 
     public:
         AuthTag(Block H, Block counter_0)
-            : H_{AuthTag::bytes_to_uint128_t(H)},
-              counter_0_{counter_0} {};
+            : H_{AuthTag::bytes_to_uint128_t(H)}, counter_0_{counter_0} {};
 
         const uint128_t& H() const noexcept;
 

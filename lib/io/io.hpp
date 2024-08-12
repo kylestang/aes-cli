@@ -87,7 +87,6 @@ class Writer {
         template <class CharT, class Traits = std::char_traits<CharT>, class T>
         static inline void dbg(std::basic_ostream<CharT, Traits>& stream,
                                const T& t) noexcept {
-            /*
     #ifdef DEBUG
                 stream << "[DEBUG] " << t << std::endl;
                 if (stream.flush().bad()) {
@@ -95,7 +94,6 @@ class Writer {
                     if (std::clog.bad()) std::abort();
                 }
     #endif
-    */
         }
 };
 

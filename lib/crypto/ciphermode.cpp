@@ -3,9 +3,11 @@
 #include <crypto/aes.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
+#include <io/io.hpp>
 
 #include "crypto.hpp"
 #include "crypto/key.hpp"
+#include "errors/errors.hpp"
 
 namespace crypto::ciphermode {
 
@@ -24,7 +26,6 @@ void CipherMode::key_decrypt_inplace(Block& block) noexcept {
 }
 
 void CipherMode::encrypt_fd() noexcept {
-    std::cout << "Entered encrypt_fd" << std::endl;
     Block buf{};
 
     std::size_t bytes_read =
@@ -44,17 +45,46 @@ void CipherMode::encrypt_fd() noexcept {
 
     pad_pkcs7(buf, bytes_read);
     key_encrypt_inplace(buf);
-    output_fd_ << buf.data();
+    io::Writer::write_block(output_fd_, buf, BLOCK_SIZE);
 
-    // std::vector<char> t = tag();
-    // output_fd_ << t.data();
-
-    // for (;;) {
-    // }
+    std::vector<char> t = tag();
+    output_fd_ << t.data();
 };
 
-void CipherMode::decrypt_fd() noexcept {
+void CipherMode::decrypt_fd() {
+    Block buf{};
+    Block cache{};
 
+    std::size_t bytes_read =
+        input_fd_.readsome((char*)(cache.data()), BLOCK_SIZE);
+
+    while (true) {
+        if (input_fd_.peek() <= 0) {  // last block
+            break;
+        }
+
+        bytes_read = input_fd_.readsome((char*)buf.data(), BLOCK_SIZE);
+        decrypt(cache);
+        io::Writer::write_block(output_fd_, cache, BLOCK_SIZE);
+        cache = buf;
+    }
+
+    decrypt(cache);
+    std::size_t bytes_remained = rm_pad_pkcs7(cache);
+    io::Writer::write_block(output_fd_, cache, bytes_remained);
+
+    // validate tag
+    std::vector<char> t = tag();
+    Block tt{};
+    std::copy(t.begin(), t.end(), tt.begin());
+
+    using gcm_utils::AuthTag;
+
+    const bool tag_valid =
+        AuthTag::bytes_to_uint128_t(tt) == AuthTag::bytes_to_uint128_t(buf);
+    if (!tag_valid) {
+        throw io::IOError{"data integrity violated", errors::Error::Other};
+    }
 };
 
 // ECB
@@ -135,8 +165,12 @@ std::vector<char> GCM::tag() noexcept {
     Block tag_block{};
     AuthTag::uint128_t_to_bytes(tag, tag_block);
 
-    return {};
-    // return {tag_block, BLOCK_SIZE};
+    std::vector<char> tag_out{};
+    for (const auto b : tag_block) {
+        tag_out.push_back(b);
+    }
+
+    return tag_out;
 }
 
 namespace gcm_utils {
