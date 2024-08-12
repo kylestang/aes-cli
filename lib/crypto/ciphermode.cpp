@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/aes.hpp>
 #include <crypto/ciphermode.hpp>
@@ -13,35 +14,39 @@ CipherMode::CipherMode(AES& key, std::istream& in, std::ostream& out,
                        Buffer& iv)
     : key_{key}, input_fd_{in}, output_fd_{out}, diffusion_block_{iv} {}
 
-void CipherMode::key_encrypt_inplace(Buffer& block) noexcept {
-    Block arr;
-    std::copy(block.begin(), block.end(), arr.begin());
+void CipherMode::key_encrypt_inplace(Block& arr) noexcept {
     Block result = crypto::encrypt(arr, key_);
-    std::copy(result.begin(), result.end(), block.begin());
+    std::copy(result.begin(), result.end(), arr.begin());
 }
 
-void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
-    Block arr;
-    std::copy(block.begin(), block.end(), arr.begin());
-    Block result = crypto::decrypt(arr, key_);
+void CipherMode::key_decrypt_inplace(Block& block) noexcept {
+    Block result = crypto::decrypt(block, key_);
     std::copy(result.begin(), result.end(), block.begin());
 }
 
 void CipherMode::encrypt_fd() noexcept {
     std::cout << "Entered encrypt_fd" << std::endl;
-    Buffer buf(BLOCK_SIZE);
-    std::cout << buf.size() << std::endl;
+    Block buf{};
 
-    std::size_t bytes_read =
-        input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
-    std::cout << "Bytes read: " << bytes_read << std::endl;
+    std::size_t bytes_read = input_fd_.readsome(buf.data(), BLOCK_SIZE);
 
-    while (bytes_read > 0) {
-        key_encrypt_inplace(buf);
+    while (true) {
+        if (input_fd_.peek() <= 0) {  // last block
+            break;
+        }
+
+        encrypt(buf);
         output_fd_ << buf.data();
-        bytes_read =
-            input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
+
+        bytes_read = input_fd_.readsome(buf.data(), BLOCK_SIZE);
     }
+
+    pad_pkcs7(buf, bytes_read);
+    key_encrypt_inplace(buf);
+    output_fd_ << buf.data();
+
+    std::vector<char> t = tag();
+    output_fd_ << t.data();
 
     // for (;;) {
     // }
@@ -55,25 +60,29 @@ void CipherMode::decrypt_fd() noexcept {
 ECB::ECB(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
     : CipherMode{key, in, out, iv} {};
 
-void ECB::encrypt(Buffer& buf) noexcept { key_encrypt_inplace(buf); }
+void ECB::encrypt(Block& buf) noexcept { key_encrypt_inplace(buf); }
 
-void ECB::decrypt(Buffer& buf) noexcept { key_decrypt_inplace(buf); }
+void ECB::decrypt(Block& buf) noexcept { key_decrypt_inplace(buf); }
 
 // CBC
 CBC::CBC(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
     : CipherMode{key, in, out, iv} {};
 
-void CBC::encrypt(Buffer& buf) noexcept {
-    buf ^= diffusion_block_;
+void CBC::encrypt(Block& buf) noexcept {
+    /*
+    // buf ^= diffusion_block_;
     key_encrypt_inplace(buf);
     diffusion_block_ = buf;
+    */
 }
 
-void CBC::decrypt(Buffer& buf) noexcept {
+void CBC::decrypt(Block& buf) noexcept {
+    /*
     Buffer ciphertext{buf};
     key_decrypt_inplace(buf);
     buf ^= diffusion_block_;
     diffusion_block_ = ciphertext;
+    */
 }
 
 // GCM:
@@ -111,30 +120,34 @@ GCM::GCM(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
 };
 
 void GCM::encrypt_general(Buffer& m) noexcept {
+    /*
     Buffer ctr_register{diffusion_block_};
     key_encrypt_inplace(ctr_register);
     m ^= ctr_register;
     gcm_utils::inc_counter(diffusion_block_);
     payload_len_ += m.size();
+    */
 };
 
-void GCM::encrypt(Buffer& buf) noexcept {
+void GCM::encrypt(Block& buf) noexcept {
+    /*
     encrypt_general(buf);
     tag_.update_tag(buf.block());
+    */
 }
 
-void GCM::decrypt(Buffer& buf) noexcept {
-    tag_.update_tag(buf.block());
-    encrypt_general(buf);
+void GCM::decrypt(Block& buf) noexcept {
+    // tag_.update_tag(buf.block());
+    // encrypt_general(buf);
 }
 
 Buffer GCM::encrypt_cp(const Buffer& block) noexcept {
     Buffer buf{block};
-    encrypt(buf);
+    // encrypt(buf);
     return buf;
 };
 
-Buffer GCM::tag() noexcept {
+std::vector<char> GCM::tag() noexcept {
     using gcm_utils::AuthTag;
 
     uint128_t len_a_c{(uint128_t(aad_len_) << 64) | payload_len_};
@@ -147,7 +160,8 @@ Buffer GCM::tag() noexcept {
     Block tag_block{};
     AuthTag::uint128_t_to_bytes(tag, tag_block);
 
-    return {tag_block, BLOCK_SIZE};
+    return {};
+    // return {tag_block, BLOCK_SIZE};
 }
 
 namespace gcm_utils {

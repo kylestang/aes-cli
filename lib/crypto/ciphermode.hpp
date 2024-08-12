@@ -18,21 +18,21 @@ class CipherMode {
         std::ostream& output_fd_;
         Buffer diffusion_block_;
 
-        virtual void key_encrypt_inplace(Buffer& buf) noexcept;
-        virtual void key_decrypt_inplace(Buffer& buf) noexcept;
+        virtual void key_encrypt_inplace(Block& buf) noexcept;
+        virtual void key_decrypt_inplace(Block& buf) noexcept;
 
     public:
         CipherMode(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
         ~CipherMode() = default;
 
-        virtual void encrypt(Buffer&) noexcept = 0;
-        virtual void decrypt(Buffer&) noexcept = 0;
+        virtual void encrypt(Block&) noexcept = 0;
+        virtual void decrypt(Block&) noexcept = 0;
 
         void encrypt_fd() noexcept;
         void decrypt_fd() noexcept;
 
         // final call to compute the authenticated tag.
-        virtual Buffer tag() noexcept { return {}; }
+        virtual std::vector<char> tag() noexcept { return {}; }
 
         // don't need these
         CipherMode() = delete;
@@ -45,15 +45,15 @@ class CipherMode {
 class ECB : public CipherMode {
     public:
         ECB(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
-        void encrypt(Buffer& buf) noexcept override;
-        void decrypt(Buffer& buf) noexcept override;
+        void encrypt(Block& buf) noexcept override;
+        void decrypt(Block& buf) noexcept override;
 };
 
 class CBC : public CipherMode {
     public:
         CBC(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
-        void encrypt(Buffer& buf) noexcept override;
-        void decrypt(Buffer& buf) noexcept override;
+        void encrypt(Block& buf) noexcept override;
+        void decrypt(Block& buf) noexcept override;
 };
 
 // GCM
@@ -104,9 +104,9 @@ class GCM : public CipherMode {
 
     public:
         GCM(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
-        void encrypt(Buffer& buf) noexcept override;
-        void decrypt(Buffer& buf) noexcept override;
-        Buffer tag() noexcept override;
+        void encrypt(Block& buf) noexcept override;
+        void decrypt(Block& buf) noexcept override;
+        std::vector<char> tag() noexcept override;
 
     private:
         // Since the encryption/decryption of payload is the

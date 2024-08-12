@@ -11,7 +11,7 @@ namespace crypto {
 
 // Cipher block, 128 bits (16 bytes)
 inline constexpr const std::size_t BLOCK_SIZE = 16;
-using Block = std::array<uint8_t, BLOCK_SIZE>;
+using Block = std::array<char, BLOCK_SIZE>;
 
 Block& operator^=(Block& l, const Block& r);
 Block operator^(const Block& l, const Block& r);
@@ -21,8 +21,8 @@ struct Buffer : public std::vector<uint8_t> {
         using Bytes = std::vector<uint8_t>;
 
     public:
-        Buffer() : std::vector<uint8_t>(BLOCK_SIZE) {};
-        Buffer(std::size_t n) : std::vector<uint8_t>(n) {};
+        Buffer() : std::vector<uint8_t>(BLOCK_SIZE){};
+        Buffer(std::size_t n) : std::vector<uint8_t>(n){};
         Buffer(Block block, std::size_t n);
         Buffer(const Buffer&) = default;
         ~Buffer() = default;
@@ -39,6 +39,13 @@ struct Buffer : public std::vector<uint8_t> {
         void pad_pkcs7() noexcept;
         void rm_pad_pkcs7() noexcept;
 };
+
+inline void pad_pkcs7(std::array<char, 16>& buf, std::size_t n) {
+    const uint8_t pad_size = BLOCK_SIZE - n;
+    for (std::size_t i = 0; i < pad_size; ++i) {
+        buf[(BLOCK_SIZE - 1 - i)] = pad_size;
+    }
+}
 
 // fill upto `n` bytes, where `n <= BLOCK_SIZE`
 inline void fill_bytes_n(Buffer& buf, uint8_t n) {
