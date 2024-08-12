@@ -49,6 +49,11 @@ target_link_libraries(ciphermode crypto)
 add_library(tables ${CMAKE_SOURCE_DIR}/lib/crypto/tables.hpp
                        ${CMAKE_SOURCE_DIR}/lib/crypto/tables.cpp)
 
+# aes
+add_library(aes ${CMAKE_SOURCE_DIR}/lib/crypto/aes.hpp
+                       ${CMAKE_SOURCE_DIR}/lib/crypto/aes.cpp)
+target_link_libraries(aes crypto tables)
+
 # TESTS
 option(TEST "compile test binaries" OFF)
 if(${TEST})
@@ -68,6 +73,10 @@ if(${TEST})
   # key
   add_executable(test_key ${CMAKE_SOURCE_DIR}/lib/crypto/test_key.cpp)
   target_link_libraries(test_key PRIVATE Catch2::Catch2WithMain tables errors)
+
+  #aes
+  add_executable(test_aes ${CMAKE_SOURCE_DIR}/lib/crypto/test_aes.cpp)
+  target_link_libraries(test_aes PRIVATE Catch2::Catch2WithMain aes tables crypto)
 endif()
 
 # BINARY
