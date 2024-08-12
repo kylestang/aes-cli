@@ -16,11 +16,15 @@ include_directories(${Boost_INCLUDE_DIRS})
 # sanitizers and build type optimization
 message("-- Build configurations:")
 message("\tCMAKE_BUILD_TYPE\t\t" ${CMAKE_BUILD_TYPE})
+if (NOT DEFINED ${CMAKE_BUILD_TYPE})
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 if(${CMAKE_BUILD_TYPE} STREQUAL Release)
   add_compile_options(-O3)
 else()
   add_compile_definitions(DEBUG)
-    # add_compile_options(-Wall -Wunused -Werror)
+  # add_compile_options(-Wall -Wunused -Werror)
 endif()
 include(Sanitizers.cmake)
 message("\tAddress sanitizer\t\t" ${ENABLE_ASAN})
@@ -87,3 +91,11 @@ endif()
 set(bin aes-cli)
 add_executable(${bin} ${CMAKE_SOURCE_DIR}/app/main.cpp)
 target_link_libraries(${bin} io ciphermode crypto tables)
+
+install(TARGETS aes-cli DESTINATION bin)
+
+# DEMO
+
+configure_file(demo ${CMAKE_INSTALL_PREFIX}/bin/demo COPYONLY)
+configure_file(plaintext.txt ${CMAKE_INSTALL_PREFIX}/plaintext.txt COPYONLY)
+configure_file(test_key.txt ${CMAKE_INSTALL_PREFIX}/test_key.txt COPYONLY)

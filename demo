@@ -1,26 +1,23 @@
 #!/usr/bin/env bash
 
-
-# TODO: change this to `make release`
-
 # clean up output test files
 rm ./test_ciphertext*.txt
 
-make debug
+make release
 
 rm ./test_ciphertext*.txt
 rm ./test_plaintext*.txt
 
-testfile='./plaintext.txt'
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # export the key
-export AES_CLI_KEY=$(cat ./test_key.txt)
+export AES_CLI_KEY=$(cat "$DIR/../test_key.txt")
 
 # encrypt a file
-# ./build/aes-cli decrypt -i ./test_ciphertext_GCM.txt -o ./test_plaintext_GCM.txt -m GCM
-# ./build/aes-cli encrypt -i ./plaintext.txt -o ./test_ciphertext_GCM.txt -m GCM
+./build/aes-cli encrypt -i "$DIR"/../plaintext.txt -o "$DIR"/../test_ciphertext_GCM.txt -m GCM
+./build/aes-cli decrypt -i "$DIR"/../test_ciphertext_GCM.txt -o "$DIR"/../test_plaintext_GCM.txt -m GCM
 
-./build/aes-cli encrypt -i ./plaintext.txt -o ./test_ciphertext_CBC.txt -m CBC
-./build/aes-cli decrypt -i ./test_ciphertext_CBC.txt -o ./test_plaintext_CBC.txt -m CBC
+./build/aes-cli encrypt -i "$DIR"/../plaintext.txt -o "$DIR"/../test_ciphertext_CBC.txt -m CBC
+./build/aes-cli decrypt -i "$DIR"/../test_ciphertext_CBC.txt -o "$DIR"/../test_plaintext_CBC.txt -m CBC
 
-# ./build/aes-cli encrypt -i ./plaintext.txt -o ./test_ciphertext_ECB.txt -m ECB
-# ./build/aes-cli decrypt -i ./test_ciphertext_ECB.txt -o ./test_plaintext_ECB.txt -m ECB
+./build/aes-cli encrypt -i "$DIR"/../plaintext.txt -o "$DIR"/../test_ciphertext_ECB.txt -m ECB
+./build/aes-cli decrypt -i "$DIR"/../test_ciphertext_ECB.txt -o "$DIR"/../test_plaintext_ECB.txt -m ECB

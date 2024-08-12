@@ -1,0 +1,7 @@
+name "Kyle Stang"
+student_id "V00935810"
+email "kylestang@uvic.ca"
+term "2024-05"
+course "SENG475"
+section "T01"
+assignment "cpp_project"
