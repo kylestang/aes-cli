@@ -1,6 +1,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/crypto.hpp>
 #include <crypto/key.hpp>
+#include <stdexcept>
 
 namespace crypto::ciphermode {
 
@@ -26,6 +27,9 @@ class CipherMode {
 
         virtual void encrypt(Buffer&) noexcept = 0;
         virtual void decrypt(Buffer&) noexcept = 0;
+
+        virtual void encrypt_fd(std::istream&) noexcept = 0;
+        virtual void decrypt_fd(std::istream&) noexcept = 0;
         // final call to compute the authenticated tag.
         virtual Buffer tag() noexcept { return {}; }
 
@@ -42,6 +46,9 @@ class ECB : public CipherMode {
         ECB(AES&);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
+
+        virtual void encrypt_fd(std::istream&) noexcept override;
+        virtual void decrypt_fd(std::istream&) noexcept override;
 };
 
 class CBC : public CipherMode {
@@ -49,6 +56,9 @@ class CBC : public CipherMode {
         CBC(AES& key, Buffer iv);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
+
+        virtual void encrypt_fd(std::istream&) noexcept override;
+        virtual void decrypt_fd(std::istream&) noexcept override;
 };
 
 // GCM
@@ -102,6 +112,9 @@ class GCM : public CipherMode {
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
         Buffer tag() noexcept override;
+
+        virtual void encrypt_fd(std::istream&) noexcept override;
+        virtual void decrypt_fd(std::istream&) noexcept override;
 
     private:
         // Since the encryption/decryption of payload is the

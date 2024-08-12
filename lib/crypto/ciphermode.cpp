@@ -23,6 +23,9 @@ void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
     std::copy(result.begin(), result.end(), block.begin());
 }
 
+void encrypt_fd(std::istream&, std::ostream&) noexcept {};
+void decrypt_fd(std::istream&, std::ostream&) noexcept {};
+
 // ECB
 ECB::ECB(AES& key) : CipherMode{key, Buffer{}} {}
 
