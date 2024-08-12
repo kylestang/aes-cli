@@ -1,7 +1,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <crypto/crypto.hpp>
 #include <crypto/key.hpp>
-#include <stdexcept>
 
 namespace crypto::ciphermode {
 
@@ -15,16 +14,15 @@ class CipherMode {
 
     protected:
         AesKey& key_;
-        Buffer diffusion_block_;
         std::istream& input_fd_;
         std::ostream& output_fd_;
+        Buffer diffusion_block_;
 
-        // Kyle: go to ciphermode.cpp and implement these
         virtual void key_encrypt_inplace(Buffer& buf) noexcept;
         virtual void key_decrypt_inplace(Buffer& buf) noexcept;
 
     public:
-        CipherMode(AES& key, std::istream& in, std::ostream& out);
+        CipherMode(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
         ~CipherMode() = default;
 
         virtual void encrypt(Buffer&) noexcept = 0;
@@ -46,14 +44,14 @@ class CipherMode {
 
 class ECB : public CipherMode {
     public:
-        ECB(AES&);
+        ECB(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
 };
 
 class CBC : public CipherMode {
     public:
-        CBC(AES& key, Buffer iv);
+        CBC(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
 };
@@ -102,10 +100,10 @@ class GCM : public CipherMode {
     private:
         gcm_utils::AuthTag tag_;
         uint64_t payload_len_{0};
-        const uint64_t aad_len_;
+        uint64_t aad_len_{0};
 
     public:
-        GCM(AES& key, Buffer iv, Buffer aad = {});
+        GCM(AES& key, std::istream& in, std::ostream& out, Buffer& iv);
         void encrypt(Buffer& buf) noexcept override;
         void decrypt(Buffer& buf) noexcept override;
         Buffer tag() noexcept override;

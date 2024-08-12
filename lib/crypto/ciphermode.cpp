@@ -3,11 +3,14 @@
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
 
+#include "crypto/key.hpp"
+
 namespace crypto::ciphermode {
 
 // CipherMode abstract class
-CipherMode::CipherMode(AES& key, Buffer iv)
-    : key_{key}, diffusion_block_{iv} {};
+CipherMode::CipherMode(AES& key, std::istream& in, std::ostream& out,
+                       Buffer& iv)
+    : key_{key}, input_fd_{in}, output_fd_{out}, diffusion_block_{iv} {}
 
 void CipherMode::key_encrypt_inplace(Buffer& block) noexcept {
     Block arr;
@@ -23,23 +26,25 @@ void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
     std::copy(result.begin(), result.end(), block.begin());
 }
 
-void encrypt_fd(std::istream&, std::ostream&) noexcept {
+void encrypt_fd() noexcept {
 
 };
 
-void decrypt_fd(std::istream&, std::ostream&) noexcept {
+void decrypt_fd() noexcept {
 
 };
 
 // ECB
-ECB::ECB(AES& key) : CipherMode{key, Buffer{}} {}
+ECB::ECB(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
+    : CipherMode{key, in, out, iv} {};
 
 void ECB::encrypt(Buffer& buf) noexcept { key_encrypt_inplace(buf); }
 
 void ECB::decrypt(Buffer& buf) noexcept { key_decrypt_inplace(buf); }
 
 // CBC
-CBC::CBC(AES& key, Buffer iv) : CipherMode{key, iv} {}
+CBC::CBC(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
+    : CipherMode{key, in, out, iv} {};
 
 void CBC::encrypt(Buffer& buf) noexcept {
     buf ^= diffusion_block_;
@@ -63,6 +68,8 @@ void CBC::decrypt(Buffer& buf) noexcept {
 //
 // 2. The `IV` has 12 random bytes, and the last 4 bytes should
 //    be initialized to zeros, these are the counter bytes.
+/*
+
 GCM::GCM(AES& key, Buffer iv, Buffer aad)
     : CipherMode{key, iv},
       tag_{encrypt_cp(Buffer{}), encrypt_cp(iv)},
@@ -77,6 +84,14 @@ GCM::GCM(AES& key, Buffer iv, Buffer aad)
     gcm_utils::inc_counter(diffusion_block_);
     tag_.update_tag(aad.block());
 }
+*/
+
+GCM::GCM(AES& key, std::istream& in, std::ostream& out, Buffer& iv)
+    : CipherMode{key, in, out, iv}, tag_{encrypt_cp(Buffer{}), encrypt_cp(iv)} {
+    // the actual message starts with counter value 1
+    gcm_utils::inc_counter(diffusion_block_);
+    tag_.update_tag(Buffer{}.block());
+};
 
 void GCM::encrypt_general(Buffer& m) noexcept {
     Buffer ctr_register{diffusion_block_};

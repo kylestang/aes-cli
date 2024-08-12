@@ -24,6 +24,7 @@ Buffer::Buffer(Block block, std::size_t n) : Buffer::Bytes(n) {
 }
 
 Buffer& Buffer::operator^=(const Buffer& other) noexcept {
+    assert(size() == other.size());
     for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
         at(i) ^= other.at(i);
     }
@@ -31,6 +32,7 @@ Buffer& Buffer::operator^=(const Buffer& other) noexcept {
 }
 
 Buffer Buffer::operator^(const Buffer& other) const noexcept {
+    assert(size() == other.size());
     Buffer tmp{*this};
     tmp ^= other;
     return tmp;
