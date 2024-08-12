@@ -43,7 +43,13 @@ class IOError : public std::exception {
 };
 
 template <class CharT, class Traits = std::char_traits<CharT>, class T>
-void write_to(std::basic_ostream<CharT, Traits>& stream, const T& t) noexcept;
+inline void write_to(std::basic_ostream<CharT, Traits>& stream, const T& t) noexcept {
+    stream << t;
+    if (stream.flush().bad()) {
+        std::clog << "write failed\n" << t << std::endl;
+        if (std::clog.bad()) std::abort();
+    }
+}
 
 enum ModeOfOperation : int {
     GCM = 1,

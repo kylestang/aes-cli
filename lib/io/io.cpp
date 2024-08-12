@@ -18,16 +18,6 @@ const char* IOError::what() const noexcept { return msg_.c_str(); }
 
 const int IOError::code() const noexcept { return err_; }
 
-template <class CharT, class Traits, class T>
-void io::write_to(std::basic_ostream<CharT, Traits>& stream,
-                  const T& t) noexcept {
-    stream << t;
-    if (stream.flush().bad()) {
-        std::clog << "write failed\n" << t << std::endl;
-        if (std::clog.bad()) std::abort();
-    }
-}
-
 IO::IO(std::string in_filename, std::string out_filename, Key key,
        ModeOfOperation mode) {
     // (optional) input output files

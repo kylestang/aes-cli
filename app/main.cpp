@@ -1,6 +1,7 @@
 #include <crypto/ciphermode.hpp>
+#include <crypto/key.hpp>
+#include <crypto/tables.hpp>
 #include <cstdlib>
-#include <format>
 #include <io/io.hpp>
 
 int main(int arg, char* argv[]) {
@@ -18,12 +19,7 @@ int main(int arg, char* argv[]) {
     std::size_t bytes_read = 0;
     while ((bytes_read = io.read(buf.begin(), crypto::BLOCK_SIZE)) ==
            crypto::BLOCK_SIZE) {
-        std::cout << std::format("[{}]", (char*)buf.begin()) << std::endl;
-        std::cout << std::format("read {} bytes", bytes_read) << std::endl;
     }
-
-    // last block
-    std::cout << std::format("read {} bytes", bytes_read) << std::endl;
 
     return 0;
 }

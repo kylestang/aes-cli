@@ -1,3 +1,5 @@
+#pragma once
+
 #include <crypto/tables.hpp>
 #include <cstdint>
 #include <errors/errors.hpp>

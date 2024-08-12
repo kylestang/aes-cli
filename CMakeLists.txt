@@ -83,4 +83,4 @@ endif()
 
 set(bin aes-cli)
 add_executable(${bin} ${CMAKE_SOURCE_DIR}/app/main.cpp)
-target_link_libraries(${bin} io ciphermode crypto)
+target_link_libraries(${bin} io ciphermode crypto tables)
