@@ -59,18 +59,19 @@ Key IO::key() const { return key_; }
 
 ModeOfOperation IO::mode_of_op() const { return mode_; };
 
-std::size_t IO::read(uint8_t* iter_start, std::size_t n) {
+std::istream& IO::input_fd() {
     if (inputfile_) {
-        return inputfile_->readsome((char*)iter_start, n);
+        return inputfile_.value();
+    } else {
+        return std::cin;
     }
-    return std::cin.readsome((char*)iter_start, n);
 }
 
-void IO::write(char* buf) {
+std::ostream& IO::output_fd() {
     if (outputfile_) {
-        Writer::write_to(*outputfile_, buf);
+        return outputfile_.value();
     } else {
-        Writer::write_to(std::cout, buf);
+        return std::cout;
     }
 }
 

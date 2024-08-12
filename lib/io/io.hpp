@@ -103,7 +103,7 @@ class IO {
 
         const ModeOfOperation mode_;
 
-    const Command cmd_;
+        const Command cmd_;
 
     public:
         IO(std::string in_filename, std::string out_filename, Key key,
@@ -115,9 +115,8 @@ class IO {
 
         ModeOfOperation mode_of_op() const;
 
-        std::size_t read(uint8_t* iter_start, std::size_t n);
-
-        void write(char* buf);
+        std::istream& input_fd();
+        std::ostream& output_fd();
 
         IO() = delete;
         IO(IO&) = delete;
