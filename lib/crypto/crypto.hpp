@@ -45,8 +45,6 @@ inline void fill_bytes_n(Buffer& buf, uint8_t n) {
         throw std::logic_error{"byte count `n` exceeds `buf` size."};
     }
 
-    buf.resize(n);
-
     std::random_device dev;
     std::mt19937 rng{dev()};
     std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
