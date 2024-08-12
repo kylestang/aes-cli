@@ -4,16 +4,10 @@
 #include <cstdlib>
 #include <io/io.hpp>
 
-int main(int arg, char* argv[]) {
+int run(int arg, char* argv[]) {
     io::IO io{io::parse_cli(arg, argv)};
 
-    crypto::AesKey* key;
-    try {
-        *key = crypto::AesKey{io.key()};
-    } catch (const crypto::KeyError& err) {
-        io::write_to(std::clog, err.what());
-        std::exit(err.code());
-    }
+    crypto::AesKey key{io.key()};
 
     crypto::Block buf{};
     std::size_t bytes_read = 0;
@@ -22,4 +16,18 @@ int main(int arg, char* argv[]) {
     }
 
     return 0;
+}
+
+int main(int arg, char* argv[]) {
+    try {
+        return run(arg, argv);
+
+    } catch (const crypto::KeyError& err) {
+        io::Writer::write_to(std::clog, err.what());
+        return err.code();
+
+    } catch (const io::IOError& err) {
+        io::Writer::write_to(std::clog, err.what());
+        return err.code();
+    }
 }

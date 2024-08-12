@@ -74,9 +74,9 @@ std::size_t IO::read(uint8_t* iter_start, std::size_t n) {
 
 void IO::write(char* buf) {
     if (outputfile_) {
-        write_to(*outputfile_, buf);
+        Writer::write_to(*outputfile_, buf);
     } else {
-        write_to(std::cout, buf);
+        Writer::write_to(std::cout, buf);
     }
 }
 
@@ -175,7 +175,7 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
 
         // if --help
         if (vm.count("help")) {
-            write_to(std::cout, desc);
+            Writer::write_to(std::cout, desc);
             std::exit(0);
         }
 
@@ -184,15 +184,18 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
             throw IOError{"Invalid command. Use 'encrypt' or 'decrypt'",
                           errors::Error::InvalidArgument};
         }
+
         return IO{input_file, output_file, key_parser(key),
                   mode_op_parser(mode)};
 
     } catch (const IOError& err) {
-        write_to(std::clog, std::format("{}\n", err.what()));
+        Writer::write_err(err.what());
         std::exit(err.code());
 
     } catch (const InvalidArgument& err) {
-        write_to(std::clog, std::format("{}\n", err.what()));
+        Writer::write_err(err.what());
+        std::exit(errors::Error::InvalidArgument);
+
     } catch (const RequiredOption& err) {
         Writer::write_err(
             "missing required command, either 'encrypt' or 'decrypt'\n");
@@ -200,9 +203,8 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
 
     } catch (...) {
         std::exception_ptr p = std::current_exception();
-        write_to(std::clog, "io: something went wrong with parsing cli args\n");
-        std::clog << (p ? p.__cxa_exception_type()->name() : "null")
-                  << std::endl;
+        Writer::write_err("something went wrong :(");
+        Writer::dbg(std::cout, p ? p.__cxa_exception_type()->name() : "null");
         std::exit(errors::Error::Other);
     }
 }

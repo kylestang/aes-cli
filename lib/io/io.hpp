@@ -42,14 +42,36 @@ class IOError : public std::exception {
         IOError& operator=(IOError&&) = delete;
 };
 
-template <class CharT, class Traits = std::char_traits<CharT>, class T>
-inline void write_to(std::basic_ostream<CharT, Traits>& stream, const T& t) noexcept {
-    stream << t;
-    if (stream.flush().bad()) {
-        std::clog << "write failed\n" << t << std::endl;
-        if (std::clog.bad()) std::abort();
-    }
-}
+class Writer {
+    public:
+        template <class T>
+        static inline void write_err(const T& t) noexcept {
+            std::clog << t << std::endl;
+            if (std::clog.bad()) std::abort();
+        }
+
+        template <class CharT, class Traits = std::char_traits<CharT>, class T>
+        static inline void write_to(std::basic_ostream<CharT, Traits>& stream,
+                                    const T& t) noexcept {
+            stream << t;
+            if (stream.flush().bad()) {
+                std::clog << "write failed\n" << t << std::endl;
+                if (std::clog.bad()) std::abort();
+            }
+        }
+
+        template <class CharT, class Traits = std::char_traits<CharT>, class T>
+        static inline void dbg(std::basic_ostream<CharT, Traits>& stream,
+                               const T& t) noexcept {
+#ifdef DEBUG
+            stream << "[DEBUG] " << t << std::endl;
+            if (stream.flush().bad()) {
+                std::clog << "write failed\n" << t << std::endl;
+                if (std::clog.bad()) std::abort();
+            }
+#endif
+        }
+};
 
 enum ModeOfOperation : int {
     GCM = 1,
