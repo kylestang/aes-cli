@@ -1,4 +1,5 @@
 #include <boost/multiprecision/cpp_int.hpp>
+#include <crypto/aes.hpp>
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
 
@@ -9,11 +10,17 @@ CipherMode::CipherMode(AES& key, Buffer iv)
     : key_{key}, diffusion_block_{iv} {};
 
 void CipherMode::key_encrypt_inplace(Buffer& block) noexcept {
-    // TODO: for Kyle
+    Block arr;
+    std::copy(block.begin(), block.end(), arr.begin());
+    Block result = crypto::encrypt(arr, key_);
+    std::copy(result.begin(), result.end(), block.begin());
 }
 
 void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
-    // TODO: for Kyle
+    Block arr;
+    std::copy(block.begin(), block.end(), arr.begin());
+    Block result = crypto::decrypt(arr, key_);
+    std::copy(result.begin(), result.end(), block.begin());
 }
 
 // ECB

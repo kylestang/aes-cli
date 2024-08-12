@@ -19,7 +19,7 @@ message("\tCMAKE_BUILD_TYPE\t\t" ${CMAKE_BUILD_TYPE})
 if(${CMAKE_BUILD_TYPE} STREQUAL Release)
   add_compile_options(-O3)
 else()
-    add_compile_definitions(DEBUG)
+  add_compile_definitions(DEBUG)
 endif()
 include(Sanitizers.cmake)
 message("\tAddress sanitizer\t\t" ${ENABLE_ASAN})
@@ -42,11 +42,6 @@ target_link_libraries(io ${Boost_LIBRARIES} errors)
 add_library(crypto ${CMAKE_SOURCE_DIR}/lib/crypto/crypto.hpp
                    ${CMAKE_SOURCE_DIR}/lib/crypto/crypto.cpp)
 
-# ciphermode
-add_library(ciphermode ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.hpp
-                       ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.cpp)
-target_link_libraries(ciphermode crypto)
-
 # tables
 add_library(tables ${CMAKE_SOURCE_DIR}/lib/crypto/tables.hpp
                        ${CMAKE_SOURCE_DIR}/lib/crypto/tables.cpp)
@@ -55,6 +50,11 @@ add_library(tables ${CMAKE_SOURCE_DIR}/lib/crypto/tables.hpp
 add_library(aes ${CMAKE_SOURCE_DIR}/lib/crypto/aes.hpp
                        ${CMAKE_SOURCE_DIR}/lib/crypto/aes.cpp)
 target_link_libraries(aes crypto tables)
+
+# ciphermode
+add_library(ciphermode ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.hpp
+                       ${CMAKE_SOURCE_DIR}/lib/crypto/ciphermode.cpp)
+target_link_libraries(ciphermode crypto aes)
 
 # TESTS
 option(TEST "compile test binaries" OFF)
