@@ -1,18 +1,10 @@
 #include <array>
-#include <crypto/aes.hpp>
 #include <crypto/crypto.hpp>
 #include <crypto/key.hpp>
 #include <crypto/tables.hpp>
 #include <cstdint>
 
 namespace crypto {
-
-uint8_t sub_byte(uint8_t input) {
-    uint8_t x = input >> 4;
-    uint8_t y = input & 0xf;
-
-    return s_box[x][y];
-}
 
 Block sub_bytes(const Block matrix) {
     return Block{
@@ -29,6 +21,13 @@ Block shift_rows(const Block matrix) {
                  matrix[5],  matrix[6],  matrix[7],  matrix[4],
                  matrix[10], matrix[11], matrix[8],  matrix[9],
                  matrix[15], matrix[12], matrix[13], matrix[14]};
+}
+
+Block inv_shift_rows(const Block matrix) {
+    return Block{matrix[0],  matrix[1],  matrix[2],  matrix[3],
+                 matrix[7],  matrix[4],  matrix[5],  matrix[6],
+                 matrix[10], matrix[11], matrix[8],  matrix[9],
+                 matrix[13], matrix[14], matrix[15], matrix[12]};
 }
 
 Block mix_columns(const Block matrix) {
@@ -51,8 +50,8 @@ Block mix_columns(const Block matrix) {
                              multiply_by_3[matrix[9]] ^ matrix[13]),
         static_cast<uint8_t>(matrix[2] ^ multiply_by_2[matrix[6]] ^
                              multiply_by_3[matrix[10]] ^ matrix[14]),
-        static_cast<uint8_t>(matrix[0] ^ multiply_by_2[matrix[4]] ^
-                             multiply_by_3[matrix[8]] ^ matrix[12]),
+        static_cast<uint8_t>(matrix[3] ^ multiply_by_2[matrix[7]] ^
+                             multiply_by_3[matrix[11]] ^ matrix[15]),
         // Row 2
         static_cast<uint8_t>(matrix[0] ^ matrix[4] ^ multiply_by_2[matrix[8]] ^
                              multiply_by_3[matrix[12]]),
