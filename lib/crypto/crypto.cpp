@@ -47,36 +47,5 @@ Block Buffer::block() const noexcept {
 Buffer::Bytes& Buffer::bytes() noexcept { return *this; }
 const Buffer::Bytes& Buffer::bytes() const noexcept { return *this; }
 
-void Buffer::pad_pkcs7() noexcept {
-    const uint8_t pad_size = BLOCK_SIZE - size();
-    resize(BLOCK_SIZE);
-    for (std::size_t i = 0; i < pad_size; ++i) {
-        at(BLOCK_SIZE - 1 - i) = pad_size;
-    }
-}
-
-void Buffer::rm_pad_pkcs7() noexcept {
-    const uint8_t pad_size = at(size() - 1);
-
-    if (pad_size > BLOCK_SIZE) return;  // no padding
-
-    // valid padding?
-    for (uint8_t i = 0; i < pad_size; ++i) {
-        if (at(BLOCK_SIZE - 1 - i) != pad_size) return;
-    }
-
-    for (uint8_t i = 0; i < pad_size; ++i) {
-        pop_back();
-    }
-
-    shrink_to_fit();
-}
-
-void block_inc(Block& block) noexcept {
-    for (uint8_t i = 15; i >= 12; --i) {
-        ++block[i];
-        if (block[i] != 0) return;
-    }
-}
 
 }  // namespace crypto
