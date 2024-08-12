@@ -172,7 +172,7 @@ Block add_round_key(Block block, AesKey aes_key, size_t round) {
 
 std::string print_block(Block& block) {
     std::ostringstream result;
-    for (int i = 0; i < block.size(); i++) {
+    for (std::size_t i = 0; i < block.size(); i++) {
         result << std::setfill('0') << std::setw(2) << std::hex << (int)block[i]
                << " ";
     }

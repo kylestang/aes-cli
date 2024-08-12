@@ -30,8 +30,7 @@ void CipherMode::encrypt_fd() noexcept {
     Buffer buf{};
 
     std::size_t bytes_read =
-    input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
-    std::cout << "bytes read: "<< bytes_read << std::endl;
+        input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
 
     // for (;;) {
     // }
@@ -165,7 +164,6 @@ const uint128_t& AuthTag::H() const noexcept { return H_; };
 
 void AuthTag::uint128_t_to_bytes(const uint128_t& n, Block& bytes) {
     const uint8_t M = bytes.size();
-    uint128_t bitmask = 0xff;
     for (uint8_t i = 0; i < M; ++i) {
         bytes[i] = uint8_t((n >> ((15 - i) * 8) & 0xff));
     }
