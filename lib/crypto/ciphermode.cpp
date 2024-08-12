@@ -75,7 +75,6 @@ void CipherMode::decrypt_fd() {
 
     // validate tag
     std::vector<char> t = tag();
-    std::cout << t.size() << std::endl;
     if (t.size() == 0) {
         return;
     }

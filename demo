@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # clean up output test files
 rm "$DIR"/../test_ciphertext*.txt
 rm "$DIR"/../test_plaintext*.txt

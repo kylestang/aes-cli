@@ -50,11 +50,8 @@ int run(int arg, char* argv[]) {
     } else if (mode == io::ModeOfOperation::CBC) {
         if (io.cmd() == io::Command::Encrypt) {
             // make iv
-            crypto::Block iv{
-                1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4,
-            };
-            std::cout << "IV: " << print_block(iv) << std::endl;
-            // crypto::fill_bytes_n(iv, crypto::BLOCK_SIZE);
+            crypto::Block iv{};
+            crypto::fill_bytes_n(iv, crypto::BLOCK_SIZE);
             io::Writer::write_block(output_fd, iv, crypto::BLOCK_SIZE);
             crypto::ciphermode::CBC cipher{key, input_fd, output_fd, iv};
             cipher.encrypt_fd();
