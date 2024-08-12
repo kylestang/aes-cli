@@ -62,20 +62,16 @@ ModeOfOperation IO::mode_of_op() const { return mode_; };
 
 std::istream& IO::input_fd() {
     if (inputfile_) {
-        std::cout << "reading file!!\n";
         return inputfile_.value();
     } else {
-        std::cout << "stdin!!!!\n";
         return std::cin;
     }
 }
 
 std::ostream& IO::output_fd() {
     if (outputfile_) {
-        std::cout << "reading file!!!!\n";
         return outputfile_.value();
     } else {
-        std::cout << "stdout!!!!\n";
         return std::cout;
     }
 }
