@@ -16,21 +16,6 @@ using Block = std::array<uint8_t, BLOCK_SIZE>;
 Block& operator^=(Block& l, const Block& r);
 Block operator^(const Block& l, const Block& r);
 
-// fill upto `n` bytes, where `n <= BLOCK_SIZE`
-inline void fill_bytes_n(Block& buf, uint8_t n) {
-    if (n > BLOCK_SIZE) {
-        throw std::logic_error{"byte count `n` exceeds `buf` size."};
-    }
-
-    std::random_device dev;
-    std::mt19937 rng{dev()};
-    std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
-
-    for (uint8_t i = 0; i < n; ++i) {
-        buf[i] = dist(rng);
-    }
-}
-
 struct Buffer : public std::vector<uint8_t> {
     public:
         using Bytes = std::vector<uint8_t>;
@@ -53,6 +38,22 @@ struct Buffer : public std::vector<uint8_t> {
         void pad_pkcs7() noexcept;
         void rm_pad_pkcs7() noexcept;
 };
+
+// fill upto `n` bytes, where `n <= BLOCK_SIZE`
+inline void fill_bytes_n(Buffer& buf, uint8_t n) {
+    if (n > BLOCK_SIZE) {
+        throw std::logic_error{"byte count `n` exceeds `buf` size."};
+    }
+
+    std::random_device dev;
+    std::mt19937 rng{dev()};
+    std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
+
+    for (uint8_t i = 0; i < n; ++i) {
+        buf[i] = dist(rng);
+    }
+}
+
 
 // Initial vector, 96 bits (12 bytes)
 constexpr const std::size_t IV_SIZE = 12;

@@ -84,10 +84,14 @@ TEST_CASE("crypto::Buffer - xor") {
 };
 
 TEST_CASE("crypto::fill_bytes_n") {
-    Block iv1{};
-    Block iv2{};
+    Buffer iv1{};
+    iv1.resize(IV_SIZE);
+    Buffer iv2{};
+    iv2.resize(IV_SIZE);
+
     fill_bytes_n(iv1, IV_SIZE);
     fill_bytes_n(iv2, IV_SIZE);
+
     REQUIRE_FALSE(iv1 == iv2);
 
     for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
@@ -96,8 +100,9 @@ TEST_CASE("crypto::fill_bytes_n") {
     }
 
     SECTION("it throws") {
-        Block buf{};
-        REQUIRE_THROWS_AS(fill_bytes_n(buf, BLOCK_SIZE+1), std::logic_error);
+        Buffer buf{};
+        buf.resize(BLOCK_SIZE);
+        REQUIRE_THROWS_AS(fill_bytes_n(buf, BLOCK_SIZE + 1), std::logic_error);
     }
 };
 
