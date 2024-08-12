@@ -60,10 +60,6 @@ constexpr std::size_t IV_SIZE = 12;
 // of `block`
 void inc_counter(Buffer&) noexcept;
 
-// make `IV`, with 12 random bytes and
-// and 4 bytes counter initialized to 0
-Buffer make_gcm_iv() noexcept;
-
 class AuthTag {
     private:
         // Param for Galois auth tag

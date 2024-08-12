@@ -31,34 +31,6 @@ TEST_CASE("gcm_utils::inc_counter") {
 
 namespace gcm_utils {
 
-TEST_CASE("gcm_utils::make_gcm_iv") {
-    Buffer buf = make_gcm_iv();
-
-    // last 4 bytes initialized to 0, these are the `counter` bytes.
-    uint8_t counter = 0;
-    for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
-        REQUIRE(buf.block()[i] == 0);
-    }
-
-    bool random_valid = false;
-    for (uint8_t i = 0; i < IV_SIZE; ++i) {
-        if (buf.block()[i] != 0) random_valid = true;
-    }
-    REQUIRE(random_valid);
-
-    SECTION("iv's are random") {
-        Buffer buf2 = gcm_utils::make_gcm_iv();
-        bool eq = true;
-        for (uint8_t i = 0; i < BLOCK_SIZE; ++i) {
-            if (buf.block()[i] != buf2.block()[i]) {
-                eq = false;
-                break;
-            }
-        }
-        REQUIRE_FALSE(eq);
-    }
-}
-
 TEST_CASE("AuthTag::bytes_to_uint128_t and AuthTag::uint128_t_to_bytes") {
     using boost::multiprecision::uint128_t;
 

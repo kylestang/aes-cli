@@ -86,9 +86,19 @@ TEST_CASE("crypto::Buffer - xor") {
 TEST_CASE("crypto::fill_bytes_n") {
     Block iv1{};
     Block iv2{};
-    crypto::fill_bytes_n(iv1, 12);
-    crypto::fill_bytes_n(iv2, 12);
+    fill_bytes_n(iv1, IV_SIZE);
+    fill_bytes_n(iv2, IV_SIZE);
     REQUIRE_FALSE(iv1 == iv2);
-}
+
+    for (uint8_t i = IV_SIZE; i < BLOCK_SIZE; ++i) {
+        REQUIRE(iv1.at(i) == 0);
+        REQUIRE(iv2.at(i) == 0);
+    }
+
+    SECTION("it throws") {
+        Block buf{};
+        REQUIRE_THROWS_AS(fill_bytes_n(buf, BLOCK_SIZE+1), std::logic_error);
+    }
+};
 
 }  // namespace crypto
