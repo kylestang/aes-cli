@@ -2,6 +2,10 @@
 
 
 # TODO: change this to `make release`
+
+# clean up output test files
+rm ./test_ciphertext*.txt
+
 make debug
 
 # export the key
@@ -11,6 +15,3 @@ export AES_CLI_KEY=$(cat ./test_key.txt)
 ./build/aes-cli encrypt -i ./test_plaintext.txt -o ./test_ciphertext_ECB.txt -m ECB
 # ./build/aes-cli encrypt -i ./test_plaintext.txt -o ./test_ciphertext_CBC.txt -m CBC
 # ./build/aes-cli encrypt -i ./test_plaintext.txt -o ./test_ciphertext_GCM.txt -m GCM
-
-# clean up output test files
-# rm ./test_ciphertext*.txt

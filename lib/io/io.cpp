@@ -176,8 +176,6 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
 
         po::options_description desc{"Usage: aes-cli <OPTIONS>"};
         auto opt = desc.add_options();
-        opt("command,c", po::value<std::string>(&command),
-            "command to execute, either 'encrypt' or 'decrypt'");
         opt("input,i", po::value<std::string>(&input_file),
             "(optional) input file");
         opt("output,o", po::value<std::string>(&output_file),
@@ -185,7 +183,7 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
         opt("mode,m", po::value<std::string>(&mode)->default_value("GCM"),
             "set mode of operation, default to GCM");
         opt("key,k", po::value<std::string>(&key),
-            "(optional) input key, of length 128, 192, 256 bits");
+            "(optional) key file, of length 128, 192, 256 bits");
         opt("help,h", "print this help message and exit");
 
         po::variables_map vm;
