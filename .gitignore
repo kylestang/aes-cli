@@ -2,3 +2,7 @@
 /build
 aes.py
 /test_ciphertext*.txt
+install/
+tmp_cmake/
+todo.md
+output.log
