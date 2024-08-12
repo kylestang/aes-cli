@@ -3,8 +3,10 @@
 #include <crypto/key.hpp>
 #include <crypto/tables.hpp>
 #include <cstdint>
+#include <io/io.hpp>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 namespace crypto {
 
@@ -168,12 +170,14 @@ Block add_round_key(Block block, AesKey aes_key, size_t round) {
         static_cast<uint8_t>(block[15] ^ key[BLOCK_SIZE * round + 15])};
 }
 
-void print_block(Block& block) {
+std::string print_block(Block& block) {
+    std::ostringstream result;
     for (int i = 0; i < block.size(); i++) {
-        std::cout << std::setfill('0') << std::setw(2) << std::hex
-                  << (int)block[i] << " ";
+        result << std::setfill('0') << std::setw(2) << std::hex << (int)block[i]
+               << " ";
     }
-    std::cout << "\n";
+    result << "\n";
+    return result.str();
 }
 
 Block encrypt(Block block, AesKey key) {
@@ -182,20 +186,20 @@ Block encrypt(Block block, AesKey key) {
 
     // Rounds
     for (size_t round = 1; round < key.get_rounds(); round++) {
-        std::cout << "\nEncrypt input to round " << round << ": ";
-        print_block(block);
+        io::Writer::dbg(std::cout, std::format("Encrypt input to round {}: {}",
+                                               round, print_block(block)));
 
         block = sub_bytes(block);
-        std::cout << "Sub result: ";
-        print_block(block);
+        io::Writer::dbg(std::cout,
+                        std::format("Sub result: {}", print_block(block)));
 
         block = shift_rows(block);
-        std::cout << "Shift result: ";
-        print_block(block);
+        io::Writer::dbg(std::cout,
+                        std::format("Shift result: {}", print_block(block)));
 
         block = mix_columns(block);
-        std::cout << "Mix result: ";
-        print_block(block);
+        io::Writer::dbg(std::cout,
+                        std::format("Mix result: {}", print_block(block)));
 
         block = add_round_key(block, key, round);
     }
@@ -214,22 +218,22 @@ Block decrypt(Block block, AesKey key) {
 
     // Rounds
     for (size_t round = key.get_rounds() - 1; round > 0; round--) {
-        std::cout << "\nDecrypt input to round " << round << ": ";
-        print_block(block);
+        io::Writer::dbg(std::cout, std::format("Decrypt input to round {}: {}",
+                                               round, print_block(block)));
 
         block = inv_shift_rows(block);
-        std::cout << "Shift result: ";
-        print_block(block);
+        io::Writer::dbg(std::cout,
+                        std::format("Shift result: {}", print_block(block)));
 
         block = inv_sub_bytes(block);
-        std::cout << "Sub result: ";
-        print_block(block);
+        io::Writer::dbg(std::cout,
+                        std::format("Sub result: {}", print_block(block)));
 
         block = add_round_key(block, key, round);
 
         block = inv_mix_columns(block);
-        std::cout << "Mix result: ";
-        print_block(block);
+        io::Writer::dbg(std::cout,
+                        std::format("Mix result: {}", print_block(block)));
     }
 
     // Final round
