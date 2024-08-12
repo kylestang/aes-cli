@@ -63,7 +63,7 @@ int run(int arg, char* argv[]) {
             const std::size_t bytes_read =
                 input_fd.readsome((char*)iv.data(), crypto::BLOCK_SIZE);
 
-            crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
+            crypto::ciphermode::CBC cipher{key, input_fd, output_fd, iv};
             cipher.decrypt_fd();
         }
 

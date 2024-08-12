@@ -8,8 +8,8 @@ rm ./test_ciphertext*.txt
 
 make debug
 
-# rm ./test_ciphertext*.txt
-# rm ./test_plaintext*.txt
+rm ./test_ciphertext*.txt
+rm ./test_plaintext*.txt
 
 testfile='./plaintext.txt'
 # export the key
@@ -24,6 +24,3 @@ export AES_CLI_KEY=$(cat ./test_key.txt)
 
 # ./build/aes-cli encrypt -i ./plaintext.txt -o ./test_ciphertext_ECB.txt -m ECB
 # ./build/aes-cli decrypt -i ./test_ciphertext_ECB.txt -o ./test_plaintext_ECB.txt -m ECB
-
-# clean up output test files
-# rm ./test_ciphertext*.txt

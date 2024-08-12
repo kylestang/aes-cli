@@ -44,7 +44,7 @@ void CipherMode::encrypt_fd() noexcept {
     }
 
     pad_pkcs7(buf, bytes_read);
-    key_encrypt_inplace(buf);
+    encrypt(buf);
     io::Writer::write_block(output_fd_, buf, BLOCK_SIZE);
 
     std::vector<char> t = tag();
@@ -75,6 +75,10 @@ void CipherMode::decrypt_fd() {
 
     // validate tag
     std::vector<char> t = tag();
+    std::cout << t.size() << std::endl;
+    if (t.size() == 0) {
+        return;
+    }
     Block tt{};
     std::copy(t.begin(), t.end(), tt.begin());
 
