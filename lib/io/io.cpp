@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <boost/program_options/errors.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <cctype>
 #include <filesystem>
 #include <format>
 #include <io/io.hpp>
@@ -145,17 +149,21 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
     namespace po = boost::program_options;
     using InvalidArgument =
         boost::wrapexcept<boost::program_options::unknown_option>;
+    using RequiredOption =
+        boost::wrapexcept<boost::program_options::required_option>;
 
     try {
-        std::string input_file, output_file, key, mode;
+        std::string input_file, output_file, key, mode, command;
 
-        po::options_description desc{"Usage"};
+        po::options_description desc{"Usage: aes-cli <OPTIONS>"};
         auto opt = desc.add_options();
+        opt("command,c", po::value<std::string>(&command),
+            "command to execute, either 'encrypt' or 'decrypt'");
         opt("input,i", po::value<std::string>(&input_file),
             "(optional) input file");
         opt("output,o", po::value<std::string>(&output_file),
             "(optional) output file");
-        opt("mode,m", po::value<std::string>(&mode),
+        opt("mode,m", po::value<std::string>(&mode)->default_value("GCM"),
             "set mode of operation, default to GCM");
         opt("key,k", po::value<std::string>(&key),
             "(optional) input key, of length 128, 192, 256 bits");
@@ -171,6 +179,11 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
             std::exit(0);
         }
 
+        // Validate the command
+        if (command != "encrypt" && command != "decrypt") {
+            throw IOError{"Invalid command. Use 'encrypt' or 'decrypt'",
+                          errors::Error::InvalidArgument};
+        }
         return IO{input_file, output_file, key_parser(key),
                   mode_op_parser(mode)};
 
@@ -180,6 +193,9 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
 
     } catch (const InvalidArgument& err) {
         write_to(std::clog, std::format("{}\n", err.what()));
+    } catch (const RequiredOption& err) {
+        Writer::write_err(
+            "missing required command, either 'encrypt' or 'decrypt'\n");
         std::exit(errors::Error::InvalidArgument);
 
     } catch (...) {
