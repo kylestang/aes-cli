@@ -4,8 +4,6 @@
 
 namespace crypto::ciphermode {
 
-using BigUint = boost::multiprecision::uint256_t;
-
 // CipherMode abstract class
 CipherMode::CipherMode(AES& key, Buffer iv)
     : key_{key}, diffusion_block_{iv} {};
@@ -21,35 +19,24 @@ void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
 // ECB
 ECB::ECB(AES& key) : CipherMode{key, Buffer{}} {}
 
-Buffer ECB::encrypt(const Buffer& plaintext) noexcept {
-    Buffer ciphertext{plaintext};
-    key_encrypt_inplace(ciphertext);
-    return ciphertext;
-}
+void ECB::encrypt(Buffer& buf) noexcept { key_encrypt_inplace(buf); }
 
-Buffer ECB::decrypt(const Buffer& ciphertext) noexcept {
-    Buffer plaintext{ciphertext};
-    key_decrypt_inplace(plaintext);
-    return plaintext;
-}
+void ECB::decrypt(Buffer& buf) noexcept { key_decrypt_inplace(buf); }
 
 // CBC
 CBC::CBC(AES& key, Buffer iv) : CipherMode{key, iv} {}
 
-Buffer CBC::encrypt(const Buffer& plaintext) noexcept {
-    Buffer ciphertext{plaintext};
-    ciphertext ^= diffusion_block_;
-    key_encrypt_inplace(ciphertext);
-    diffusion_block_ = ciphertext;
-    return ciphertext;
+void CBC::encrypt(Buffer& buf) noexcept {
+    buf ^= diffusion_block_;
+    key_encrypt_inplace(buf);
+    diffusion_block_ = buf;
 }
 
-Buffer CBC::decrypt(const Buffer& ciphertext) noexcept {
-    Buffer plaintext{ciphertext};
-    key_decrypt_inplace(plaintext);
-    plaintext ^= diffusion_block_;
+void CBC::decrypt(Buffer& buf) noexcept {
+    Buffer ciphertext{buf};
+    key_decrypt_inplace(buf);
+    buf ^= diffusion_block_;
     diffusion_block_ = ciphertext;
-    return plaintext;
 }
 
 // GCM:
@@ -84,18 +71,14 @@ void GCM::encrypt_general(Buffer& m) noexcept {
     payload_len_ += m.size();
 };
 
-Buffer GCM::encrypt(const Buffer& plaintext) noexcept {
-    Buffer ciphertext{plaintext};
-    encrypt_general(ciphertext);
-    tag_.update_tag(ciphertext.block());
-    return ciphertext;
+void GCM::encrypt(Buffer& buf) noexcept {
+    encrypt_general(buf);
+    tag_.update_tag(buf.block());
 }
 
-Buffer GCM::decrypt(const Buffer& ciphertext) noexcept {
-    tag_.update_tag(ciphertext.block());
-    Buffer plaintext{ciphertext};
-    encrypt_general(plaintext);
-    return plaintext;
+void GCM::decrypt(Buffer& buf) noexcept {
+    tag_.update_tag(buf.block());
+    encrypt_general(buf);
 }
 
 Buffer GCM::encrypt_cp(const Buffer& block) noexcept {
