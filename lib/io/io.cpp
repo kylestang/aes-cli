@@ -23,7 +23,8 @@ const char* IOError::what() const noexcept { return msg_.c_str(); }
 const int IOError::code() const noexcept { return err_; }
 
 IO::IO(std::string in_filename, std::string out_filename, Key key,
-       ModeOfOperation mode) {
+       ModeOfOperation mode, Command cmd)
+    : key_{key}, mode_{mode}, cmd_{cmd} {
     // (optional) input output files
     if (in_filename.size()) {
         if (!std::filesystem::exists(in_filename)) {
@@ -52,13 +53,6 @@ IO::IO(std::string in_filename, std::string out_filename, Key key,
                 std::format("Failed to open output file: {}.", out_filename)};
         }
     }
-
-    // (optional) key
-    // if key not fed from cli, read from env args
-    key_ = key;
-
-    // mode
-    mode_ = mode;
 }
 
 Key IO::key() const { return key_; }
@@ -145,6 +139,23 @@ Key io::key_parser(const std::string& key_arg) {
     return key;
 }
 
+io::Command io::command_parser(const std::string& command) {
+    std::string cmd{command};
+    const auto fn = [](char i) -> char { return std::tolower(i); };
+    std::transform(command.begin(), command.end(), cmd.begin(), fn);
+
+    if (cmd == "encrypt") {
+        return Command::Encrypt;
+    } else if (cmd == "decrypt") {
+        return Command::Decrypt;
+    } else {
+        throw IOError{
+            std::format("Invalid command [{}]. Use 'encrypt' or 'decrypt'",
+                        command),
+            errors::Error::InvalidArgument};
+    }
+}
+
 io::IO io::parse_cli(int ac, char* av[]) noexcept {
     namespace po = boost::program_options;
     using InvalidArgument =
@@ -179,14 +190,8 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
             std::exit(0);
         }
 
-        // Validate the command
-        if (command != "encrypt" && command != "decrypt") {
-            throw IOError{"Invalid command. Use 'encrypt' or 'decrypt'",
-                          errors::Error::InvalidArgument};
-        }
-
         return IO{input_file, output_file, key_parser(key),
-                  mode_op_parser(mode)};
+                  mode_op_parser(mode), command_parser(command)};
 
     } catch (const IOError& err) {
         Writer::write_err(err.what());

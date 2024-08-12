@@ -73,7 +73,7 @@ class Writer {
         }
 };
 
-enum ModeOfOperation : int {
+enum ModeOfOperation : char {
     GCM = 1,
     CBC,
     ECB,
@@ -84,6 +84,13 @@ ModeOfOperation mode_op_parser(const std::string& mode);
 
 Key key_parser(const std::string& key_arg);
 
+enum Command : char {
+    Encrypt,
+    Decrypt,
+};
+
+Command command_parser(const std::string& command);
+
 class IO {
     private:
         // if inputfile is none, read from stdin
@@ -92,13 +99,15 @@ class IO {
         // if outputfile is none, write to stdout
         std::optional<std::ofstream> outputfile_{std::nullopt};
 
-        Key key_{};
+        const Key key_{};
 
-        ModeOfOperation mode_;
+        const ModeOfOperation mode_;
+
+    const Command cmd_;
 
     public:
         IO(std::string in_filename, std::string out_filename, Key key,
-           ModeOfOperation mode);
+           ModeOfOperation mode, Command cmd);
 
         ~IO() = default;
 
