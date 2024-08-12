@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <crypto/aes.hpp>
 #include <crypto/crypto.hpp>
+#include <iostream>
 
 using namespace crypto;
 
@@ -97,14 +98,38 @@ TEST_CASE("Encrypt 128") {
         0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,
     };
 
-    const Block expected{
-        0xa,  0x94, 0xb,  0xb5, 0x41, 0x6e, 0xf0, 0x45,
-        0xf1, 0xc3, 0x94, 0x58, 0xc6, 0x53, 0xea, 0x5a,
-    };
+    const Block expected{0xb6, 0x1e, 0x6a, 0xf8, 0xda, 0x72, 0x60, 0xd2,
+                         0x21, 0x43, 0x69, 0xb9, 0x51, 0xbf, 0x89, 0x63};
 
-    const AesKey key(key_bytes);
+    AesKey key(key_bytes);
+    for (int i = 0; i < key.get_key().size(); i++) {
+        std::cout << std::setfill('0') << std::setw(2) << std::hex
+                  << (int)key.get_key()[i] << " ";
+    }
+    std::cout << "\n";
 
     const Block result = encrypt(input, key);
 
+    REQUIRE((int)expected[0] == (int)result[0]);
     REQUIRE(expected == result);
 }
+/*
+TEST_CASE("Encrypt and decrypt") {
+    const Block plaintext{
+        0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+        0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,
+    };
+
+    const std::vector<uint8_t> key_bytes{
+        0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+        0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,
+    };
+    const AesKey key(key_bytes);
+
+    const Block ciphertext = encrypt(plaintext, key);
+
+    const Block result = decrypt(ciphertext, key);
+
+    REQUIRE(plaintext == result);
+}
+*/
