@@ -20,28 +20,46 @@ int run(int arg, char* argv[]) {
     io::ModeOfOperation mode{io.mode_of_op()};
 
     if (mode == io::ModeOfOperation::GCM) {
-        // make iv
-        crypto::Buffer iv{};
-        crypto::fill_bytes_n(iv, gcm_utils::IV_SIZE);
-        io::Writer::write_bytes(output_fd, iv);
-
-        crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
         if (io.cmd() == io::Command::Encrypt) {
+            // make iv
+            crypto::Buffer iv{};
+            crypto::fill_bytes_n(iv, gcm_utils::IV_SIZE);
+            io::Writer::write_bytes(output_fd, iv);
+
+            crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
             cipher.encrypt_fd();
         } else {
+            std::array<uint8_t, gcm_utils::IV_SIZE> block;
+            const std::size_t bytes_read =
+                input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
+
+            crypto::Buffer iv{};
+            iv.resize(crypto::BLOCK_SIZE);
+            std::copy(block.begin(), block.end(), iv.begin());
+
+            crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
             cipher.decrypt_fd();
         }
 
     } else if (mode == io::ModeOfOperation::CBC) {
-        // make iv
-        crypto::Buffer iv{};
-        crypto::fill_bytes_n(iv, crypto::BLOCK_SIZE);
-        io::Writer::write_bytes(output_fd, iv);
-
-        crypto::ciphermode::CBC cipher{key, input_fd, output_fd, iv};
         if (io.cmd() == io::Command::Encrypt) {
+            // make iv
+            crypto::Buffer iv{};
+            crypto::fill_bytes_n(iv, crypto::BLOCK_SIZE);
+            io::Writer::write_bytes(output_fd, iv);
+
+            crypto::ciphermode::CBC cipher{key, input_fd, output_fd, iv};
             cipher.encrypt_fd();
         } else {
+            std::array<uint8_t, crypto::BLOCK_SIZE> block;
+            const std::size_t bytes_read =
+                input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
+
+            crypto::Buffer iv{};
+            iv.resize(crypto::BLOCK_SIZE);
+            std::copy(block.begin(), block.end(), iv.begin());
+
+            crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
             cipher.decrypt_fd();
         }
 
