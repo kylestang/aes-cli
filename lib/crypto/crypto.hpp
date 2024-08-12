@@ -21,7 +21,7 @@ struct Buffer : public std::vector<uint8_t> {
         using Bytes = std::vector<uint8_t>;
 
     public:
-        Buffer(){};
+        Buffer() : std::vector<uint8_t>() {};
         Buffer(Block block, std::size_t n);
         Buffer(const Buffer&) = default;
         ~Buffer() = default;
@@ -45,6 +45,8 @@ inline void fill_bytes_n(Buffer& buf, uint8_t n) {
         throw std::logic_error{"byte count `n` exceeds `buf` size."};
     }
 
+    buf.resize(n);
+
     std::random_device dev;
     std::mt19937 rng{dev()};
     std::uniform_int_distribution<std::mt19937::result_type> dist{0, 0xff};
@@ -54,10 +56,8 @@ inline void fill_bytes_n(Buffer& buf, uint8_t n) {
     }
 }
 
-
 // Initial vector, 96 bits (12 bytes)
 constexpr const std::size_t IV_SIZE = 12;
-using IV = std::array<uint8_t, IV_SIZE>;
 
 namespace gcmutils {
 

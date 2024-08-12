@@ -5,11 +5,8 @@
 #include <cstdlib>
 #include <io/io.hpp>
 
-using crypto::ciphermode::CBC;
-using crypto::ciphermode::CipherMode;
-using crypto::ciphermode::ECB;
-using crypto::ciphermode::GCM;
-using io::ModeOfOperation;
+#include "crypto/crypto.hpp"
+
 namespace gcm_utils = crypto::ciphermode::gcm_utils;
 
 int run(int arg, char* argv[]) {
@@ -20,55 +17,42 @@ int run(int arg, char* argv[]) {
     std::ostream& output_fd = io.output_fd();
     const io::Command& cmd = io.cmd();
 
-    std::unique_ptr<CipherMode> cipher;
     io::ModeOfOperation mode{io.mode_of_op()};
 
-    if (mode == ModeOfOperation::GCM) {
+    if (mode == io::ModeOfOperation::GCM) {
+        // make iv
         crypto::Buffer iv{};
-        iv.resize(crypto::BLOCK_SIZE);
-        // 12 bytes random, 4 bytes 0 (counter bytes)
         crypto::fill_bytes_n(iv, gcm_utils::IV_SIZE);
+        io::Writer::write_bytes(output_fd, iv);
 
-        cipher = std::unique_ptr<CipherMode>{
-            dynamic_cast<CipherMode*>(new GCM{key, iv})};
+        crypto::ciphermode::GCM cipher{key, input_fd, output_fd, iv};
+        if (io.cmd() == io::Command::Encrypt) {
+            cipher.encrypt_fd();
+        } else {
+            cipher.decrypt_fd();
+        }
 
-    } else if (mode == ModeOfOperation::CBC) {
+    } else if (mode == io::ModeOfOperation::CBC) {
+        // make iv
         crypto::Buffer iv{};
-        iv.resize(crypto::BLOCK_SIZE);
         crypto::fill_bytes_n(iv, crypto::BLOCK_SIZE);
+        io::Writer::write_bytes(output_fd, iv);
 
-        cipher = std::unique_ptr<CipherMode>{
-            dynamic_cast<CipherMode*>(new CBC{key, iv})};
+        crypto::ciphermode::CBC cipher{key, input_fd, output_fd, iv};
+        if (io.cmd() == io::Command::Encrypt) {
+            cipher.encrypt_fd();
+        } else {
+            cipher.decrypt_fd();
+        }
 
     } else {  // ModeOfOperation::ECB
-        cipher = std::unique_ptr<CipherMode>{
-            dynamic_cast<CipherMode*>(new ECB{key})};
-    }
-
-    crypto::Block buf{};
-    std::size_t bytes_read =
-        input_fd.readsome((char*)buf.begin(), crypto::BLOCK_SIZE);
-
-    while (true) {
-        const bool is_eof = input_fd.peek() == EOF;
-
-        if (is_eof) {
-            if (cmd == io::Command::Encrypt) {
-            } else {
-            }
-
-            io::Writer::write_to(std::cout, "end of file\n");
-            break;
-        }
-
-        io::Writer::write_to(std::cout, "Process `buf`");
-        if (cmd == io::Command::Encrypt) {
+        crypto::Buffer iv{};
+        crypto::ciphermode::ECB gcm{key, input_fd, output_fd, iv};
+        if (io.cmd() == io::Command::Encrypt) {
+            gcm.encrypt_fd();
         } else {
+            gcm.decrypt_fd();
         }
-
-        bytes_read = input_fd.readsome((char*)buf.begin(), crypto::BLOCK_SIZE);
-        io::Writer::write_to(std::cout,
-                             std::format("read {} bytes\n", bytes_read));
     }
 
     return 0;

@@ -26,11 +26,11 @@ void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
     std::copy(result.begin(), result.end(), block.begin());
 }
 
-void encrypt_fd() noexcept {
+void CipherMode::encrypt_fd() noexcept {
 
 };
 
-void decrypt_fd() noexcept {
+void CipherMode::decrypt_fd() noexcept {
 
 };
 

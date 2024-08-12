@@ -50,6 +50,19 @@ class Writer {
             if (std::clog.bad()) std::abort();
         }
 
+        template <class CharT, class Traits = std::char_traits<CharT>>
+        static inline void write_bytes(
+            std::basic_ostream<CharT, Traits>& stream,
+            const std::vector<uint8_t>& buf) noexcept {
+            for (const uint8_t byte : buf) {
+                stream << byte;
+            }
+            if (stream.flush().bad()) {
+                std::clog << "write failed\n" << std::endl;
+                if (std::clog.bad()) std::abort();
+            }
+        }
+
         template <class CharT, class Traits = std::char_traits<CharT>, class T>
         static inline void write_to(std::basic_ostream<CharT, Traits>& stream,
                                     const T& t) noexcept {
@@ -117,7 +130,7 @@ class IO {
 
         std::istream& input_fd();
         std::ostream& output_fd();
-    const Command& cmd() const noexcept;
+        const Command& cmd() const noexcept;
 
         IO() = delete;
         IO(IO&) = delete;
