@@ -27,7 +27,14 @@ void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
 }
 
 void CipherMode::encrypt_fd() noexcept {
+    Buffer buf{};
 
+    std::size_t bytes_read =
+    input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
+    std::cout << "bytes read: "<< bytes_read << std::endl;
+
+    // for (;;) {
+    // }
 };
 
 void CipherMode::decrypt_fd() noexcept {

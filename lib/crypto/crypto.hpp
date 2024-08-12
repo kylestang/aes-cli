@@ -21,7 +21,8 @@ struct Buffer : public std::vector<uint8_t> {
         using Bytes = std::vector<uint8_t>;
 
     public:
-        Buffer() : std::vector<uint8_t>() {};
+        Buffer() : std::vector<uint8_t>(BLOCK_SIZE) {};
+        Buffer(std::size_t n) : std::vector<uint8_t>(n) {};
         Buffer(Block block, std::size_t n);
         Buffer(const Buffer&) = default;
         ~Buffer() = default;
