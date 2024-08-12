@@ -105,7 +105,7 @@ TEST_CASE("Encrypt 128") {
     };
 
     AesKey key(key_bytes);
-    for (int i = 0; i < key.get_key().size(); i++) {
+    for (size_t i = 0; i < key.get_key().size(); i++) {
         std::cout << std::setfill('0') << std::setw(2) << std::hex
                   << (int)key.get_key()[i] << " ";
     }

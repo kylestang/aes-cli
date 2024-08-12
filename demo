@@ -13,4 +13,4 @@ export AES_CLI_KEY=$(cat ./test_key.txt)
 ./build/aes-cli encrypt -i ./test_plaintext.txt -o ./test_ciphertext_ECB.txt -m ECB
 
 # clean up output test files
-rm ./test_ciphertext*.txt
+# rm ./test_ciphertext*.txt

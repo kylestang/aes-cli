@@ -3,6 +3,7 @@
 #include <crypto/ciphermode.hpp>
 #include <cstdint>
 
+#include "crypto.hpp"
 #include "crypto/key.hpp"
 
 namespace crypto::ciphermode {
@@ -27,10 +28,20 @@ void CipherMode::key_decrypt_inplace(Buffer& block) noexcept {
 }
 
 void CipherMode::encrypt_fd() noexcept {
-    Buffer buf{};
+    std::cout << "Entered encrypt_fd" << std::endl;
+    Buffer buf(BLOCK_SIZE);
+    std::cout << buf.size() << std::endl;
 
     std::size_t bytes_read =
         input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
+    std::cout << "Bytes read: " << bytes_read << std::endl;
+
+    while (bytes_read > 0) {
+        key_encrypt_inplace(buf);
+        output_fd_ << buf.data();
+        bytes_read =
+            input_fd_.readsome(reinterpret_cast<char*>(buf.data()), BLOCK_SIZE);
+    }
 
     // for (;;) {
     // }

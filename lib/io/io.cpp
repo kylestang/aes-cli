@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <format>
 #include <io/io.hpp>
+#include <ostream>
 #include <string>
 
 using io::IO;
@@ -61,16 +62,20 @@ ModeOfOperation IO::mode_of_op() const { return mode_; };
 
 std::istream& IO::input_fd() {
     if (inputfile_) {
+        std::cout << "reading file!!\n";
         return inputfile_.value();
     } else {
+        std::cout << "stdin!!!!\n";
         return std::cin;
     }
 }
 
 std::ostream& IO::output_fd() {
     if (outputfile_) {
+        std::cout << "reading file!!!!\n";
         return outputfile_.value();
     } else {
+        std::cout << "stdout!!!!\n";
         return std::cout;
     }
 }
@@ -157,9 +162,7 @@ io::Command io::command_parser(const std::string& command) {
     }
 }
 
-const io::Command& io::IO::cmd() const noexcept {
-    return cmd_;
-}
+const io::Command& io::IO::cmd() const noexcept { return cmd_; }
 
 io::IO io::parse_cli(int ac, char* av[]) noexcept {
     namespace po = boost::program_options;
@@ -194,6 +197,10 @@ io::IO io::parse_cli(int ac, char* av[]) noexcept {
             Writer::write_to(std::cout, desc);
             std::exit(0);
         }
+
+        if (ac > 1) {
+            command = av[1];
+        };
 
         return IO{input_file, output_file, key_parser(key),
                   mode_op_parser(mode), command_parser(command)};

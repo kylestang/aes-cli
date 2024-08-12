@@ -16,7 +16,6 @@ int run(int arg, char* argv[]) {
     crypto::AesKey key{io.key()};
     std::istream& input_fd = io.input_fd();
     std::ostream& output_fd = io.output_fd();
-    const io::Command& cmd = io.cmd();
 
     io::ModeOfOperation mode{io.mode_of_op()};
 
@@ -33,8 +32,8 @@ int run(int arg, char* argv[]) {
 
         } else {
             std::array<uint8_t, gcm_utils::IV_SIZE> block;
-            const std::size_t bytes_read =
-                input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
+            // const std::size_t bytes_read =
+            input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
 
             crypto::Buffer iv{};
             iv.resize(crypto::BLOCK_SIZE);
@@ -55,8 +54,8 @@ int run(int arg, char* argv[]) {
             cipher.encrypt_fd();
         } else {
             std::array<uint8_t, crypto::BLOCK_SIZE> block;
-            const std::size_t bytes_read =
-                input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
+            //            const std::size_t bytes_read =
+            input_fd.readsome((char*)block.begin(), gcm_utils::IV_SIZE);
 
             crypto::Buffer iv{};
             iv.resize(crypto::BLOCK_SIZE);
@@ -67,6 +66,7 @@ int run(int arg, char* argv[]) {
         }
 
     } else {  // ModeOfOperation::ECB
+        std::cout << "ecb\n";
         crypto::Buffer iv{};
         crypto::ciphermode::ECB gcm{key, input_fd, output_fd, iv};
         if (io.cmd() == io::Command::Encrypt) {
