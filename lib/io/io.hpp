@@ -117,6 +117,7 @@ class IO {
 
         std::istream& input_fd();
         std::ostream& output_fd();
+    const Command& cmd() const noexcept;
 
         IO() = delete;
         IO(IO&) = delete;

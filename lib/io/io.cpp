@@ -157,6 +157,10 @@ io::Command io::command_parser(const std::string& command) {
     }
 }
 
+const io::Command& io::IO::cmd() const noexcept {
+    return cmd_;
+}
+
 io::IO io::parse_cli(int ac, char* av[]) noexcept {
     namespace po = boost::program_options;
     using InvalidArgument =
